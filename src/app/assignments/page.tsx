@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { markAssignmentAsSubmitted } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/components/session-provider';
+import { useSearchParams } from 'next/navigation';
 
 const PAGE_SIZE = 5;
 
@@ -28,8 +29,9 @@ function MarkAsSubmittedButton({ assignmentId, notificationId }: { assignmentId:
     return <Button onClick={handleClick} size="sm" variant="outline">Mark as Submitted</Button>;
 }
 
-export default function AssignmentsPage({ searchParams }: { searchParams?: { page?: string } }) {
-  const currentPage = Number(searchParams?.page) || 1;
+export default function AssignmentsPage() {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
   const session = useSession();
   
   const [assignments, setAssignments] = useState<Assignment[]>([]);

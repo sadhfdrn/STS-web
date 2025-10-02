@@ -1,56 +1,46 @@
+'use client';
 import { PaginationControls } from '@/components/shared/pagination';
 import { MaterialFilters } from '@/components/materials/material-filters';
 import { MaterialCard } from '@/components/materials/material-card';
 import type { Subject, FileType, CourseMaterial } from '@/lib/types';
 import { courseMaterials } from '@/lib/mock-data';
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 const PAGE_SIZE = 6;
 
-async function getMaterials(
-  page: number, 
-  subjectFilter?: Subject | 'All',
-  fileTypeFilter?: FileType | 'All',
-  query?: string
-) {
-  let filtered = courseMaterials;
+export default function MaterialsPage() {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const subjectFilter = searchParams.get('subject') as Subject | 'All' | null;
+  const fileTypeFilter = searchParams.get('fileType') as FileType | 'All' | null;
+  const query = searchParams.get('query');
 
-  if (subjectFilter && subjectFilter !== 'All') {
-    filtered = filtered.filter(m => m.subject === subjectFilter);
-  }
-  if (fileTypeFilter && fileTypeFilter !== 'All') {
-    filtered = filtered.filter(m => m.fileType === fileTypeFilter);
-  }
-  if (query) {
-    filtered = filtered.filter(m => m.filename.toLowerCase().includes(query.toLowerCase()));
-  }
+  const [materials, setMaterials] = useState<CourseMaterial[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const sorted = filtered.sort((a,b) => b.uploadDate.getTime() - a.uploadDate.getTime());
+  useEffect(() => {
+    let filtered = courseMaterials;
 
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
-  const start = (page - 1) * PAGE_SIZE;
-  const end = start + PAGE_SIZE;
+    if (subjectFilter && subjectFilter !== 'All') {
+      filtered = filtered.filter(m => m.subject === subjectFilter);
+    }
+    if (fileTypeFilter && fileTypeFilter !== 'All') {
+      filtered = filtered.filter(m => m.fileType === fileTypeFilter);
+    }
+    if (query) {
+      filtered = filtered.filter(m => m.filename.toLowerCase().includes(query.toLowerCase()));
+    }
 
-  return {
-    materials: sorted.slice(start, end),
-    totalPages,
-  }
-}
+    const sorted = filtered.sort((a,b) => b.uploadDate.getTime() - a.uploadDate.getTime());
 
-export default async function MaterialsPage({ searchParams }: { 
-    searchParams?: { 
-        page?: string;
-        subject?: Subject | 'All';
-        fileType?: FileType | 'All';
-        query?: string;
-    } 
-}) {
-  const currentPage = Number(searchParams?.page) || 1;
-  const { materials, totalPages } = await getMaterials(
-    currentPage, 
-    searchParams?.subject,
-    searchParams?.fileType,
-    searchParams?.query
-  );
+    const pages = Math.ceil(sorted.length / PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+
+    setMaterials(sorted.slice(start, end));
+    setTotalPages(pages);
+  }, [currentPage, subjectFilter, fileTypeFilter, query]);
 
   return (
     <div className="space-y-6">
