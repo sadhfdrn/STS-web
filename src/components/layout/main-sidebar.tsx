@@ -8,7 +8,8 @@ import {
   SidebarFooter, 
   SidebarMenu, 
   SidebarMenuItem, 
-  SidebarMenuButton 
+  SidebarMenuButton,
+  useSidebar
 } from '@/components/ui/sidebar';
 import { Home, Bell, Book, LogIn, User, Power } from 'lucide-react';
 import Link from 'next/link';
@@ -16,7 +17,7 @@ import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth';
-import { useFormState } from 'react-dom';
+import { useEffect } from 'react';
 
 const menuItems = [
   { href: '/', label: 'Home', icon: Home, tooltip: 'Home' },
@@ -27,6 +28,13 @@ const menuItems = [
 export function MainSidebar() {
   const pathname = usePathname();
   const session = useSession();
+  const { setOpenMobile, isMobile } = useSidebar();
+
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [pathname, isMobile, setOpenMobile]);
 
   return (
     <Sidebar collapsible="icon">
