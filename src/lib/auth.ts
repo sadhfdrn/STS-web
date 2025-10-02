@@ -36,14 +36,22 @@ async function decrypt(input: string): Promise<any> {
 function getAdminUsers() {
     const admins: Record<string, string> = {};
     let i = 1;
-    while (process.env[`ADMIN_${i}_EMAIL`]) {
-        const email = process.env[`ADMIN_${i}_EMAIL`];
-        const password = process.env[`ADMIN_${i}_PASSWORD`];
-        if (email && password) {
-            admins[email] = password;
+    while (process.env[`ADMIN_${i}`]) {
+        const adminString = process.env[`ADMIN_${i}`];
+        if(adminString) {
+            const [email, password] = adminString.split(',');
+            if (email && password) {
+                admins[email.trim()] = password.trim();
+            }
         }
         i++;
     }
+    
+    // A default user for testing if no admins are set in env
+    if (Object.keys(admins).length === 0) {
+        admins['test@example.com'] = 'samuel';
+    }
+
     return admins;
 }
 
