@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import type { Subject, CourseMaterial } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { FileText, Image, Video } from "lucide-react";
-import { courseMaterials } from "@/lib/mock-data";
+import { getCourseMaterials } from "@/lib/db";
 
 const fileTypeIcons = {
   pdf: <FileText className="h-5 w-5 text-muted-foreground" />,
@@ -15,6 +15,7 @@ const fileTypeIcons = {
 const subjects: Subject[] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
 
 async function getMaterialsBySubject() {
+    const courseMaterials = await getCourseMaterials();
     const materialsBySubject = subjects.reduce((acc, subject) => {
         acc[subject] = courseMaterials.filter(m => m.subject === subject);
         return acc;

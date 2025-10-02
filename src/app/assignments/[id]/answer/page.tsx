@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileWarning } from 'lucide-react';
 import type { Assignment } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { assignments } from '@/lib/mock-data';
+import { getAssignmentById } from '@/lib/actions';
 import { useEffect, useState } from 'react';
 
 export default function AssignmentAnswerPage({ params }: { params: { id: string } }) {
@@ -12,9 +12,12 @@ export default function AssignmentAnswerPage({ params }: { params: { id: string 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const found = assignments.find(a => a.id === params.id);
-    setAssignment(found);
-    setIsLoading(false);
+    async function loadAssignment() {
+      const found = await getAssignmentById(params.id);
+      setAssignment(found);
+      setIsLoading(false);
+    }
+    loadAssignment();
   }, [params.id]);
 
 

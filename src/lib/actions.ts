@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import fetch from 'node-fetch';
-import { notifications, assignments, courseMaterials, addData } from './mock-data';
+import { addNotification as dbAddNotification, addCourseMaterial, addAssignment as dbAddAssignment, updateAssignmentSubmission } from './db';
 import type { Notification, Assignment, CourseMaterial, Subject } from './types';
 
 async function uploadToCatbox(file: File) {
@@ -63,7 +63,7 @@ export async function addNotification(formData: FormData) {
       submitted: false,
   };
 
-  addData('notifications', newNotification);
+  await dbAddNotification(newNotification);
 
   revalidatePath('/admin/dashboard/notifications');
   revalidatePath('/notifications');
@@ -108,7 +108,7 @@ export async function addMaterial(formData: FormData) {
         uploadDate: new Date(),
     };
 
-    addData('courseMaterials', newMaterial);
+    await addCourseMaterial(newMaterial);
 
     revalidatePath('/admin/dashboard/materials');
     revalidatePath('/materials');
@@ -156,9 +156,9 @@ export async function addAssignment(formData: FormData) {
     }
     const fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
     
-    let answerFileUrl = null;
-    let answerFileType = null;
-    let answerFilename = null;
+    let answerFileUrl: string | null = null;
+    let answerFileType: 'pdf' | 'image' | null = null;
+    let answerFilename: string | null = null;
     
     if (answerFile && answerFile.size > 0) {
         answerFileUrl = await uploadToCatbox(answerFile);
@@ -176,7 +176,7 @@ export async function addAssignment(formData: FormData) {
         submitted: false
     };
 
-    addData('notifications', newNotification);
+    await dbAddNotification(newNotification);
 
     const newAssignment: Assignment = {
         id: `asg-${Date.now()}`,
@@ -195,7 +195,7 @@ export async function addAssignment(formData: FormData) {
         notificationId: notificationId
     };
 
-    addData('assignments', newAssignment);
+    await dbAddAssignment(newAssignment);
 
     revalidatePath('/admin/dashboard/assignments');
     revalidatePath('/assignments');
@@ -207,19 +207,9 @@ export async function addAssignment(formData: FormData) {
 }
 
 export async function markAssignmentAsSubmitted(assignmentId: string, notificationId: string) {
-    const assignment = assignments.find(a => a.id === assignmentId);
-    const notification = notifications.find(n => n.id === notificationId);
+    const success = await updateAssignmentSubmission(assignmentId, notificationId);
 
-    if (assignment) {
-        assignment.submitted = true;
-        assignment.submissionDate = new Date();
-    }
-    if(notification) {
-        notification.submitted = true;
-        notification.submissionDate = new Date();
-    }
-
-    if (!assignment) {
+    if (!success) {
       return { success: false, message: 'Assignment not found.' };
     }
 
@@ -227,4 +217,24 @@ export async function markAssignmentAsSubmitted(assignmentId: string, notificati
     revalidatePath('/');
 
     return { success: true, message: 'Assignment marked as submitted.' };
+}
+
+export async function getAllNotifications() {
+    const { getNotifications } = await import('./db');
+    return await getNotifications();
+}
+
+export async function getAllCourseMaterials() {
+    const { getCourseMaterials } = await import('./db');
+    return await getCourseMaterials();
+}
+
+export async function getAllAssignments() {
+    const { getAssignments } = await import('./db');
+    return await getAssignments();
+}
+
+export async function getAssignmentById(id: string) {
+    const assignments = await getAllAssignments();
+    return assignments.find(a => a.id === id);
 }

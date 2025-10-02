@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Download, FileText, Image, BookCheck, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { assignments as allAssignments } from '@/lib/mock-data';
 import { useState, useEffect } from 'react';
-import { markAssignmentAsSubmitted } from '@/lib/actions';
+import { markAssignmentAsSubmitted, getAllAssignments } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/components/session-provider';
 import { useSearchParams } from 'next/navigation';
@@ -38,13 +37,17 @@ export default function AssignmentsPage() {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    const sorted = allAssignments.sort((a,b) => b.date.getTime() - a.date.getTime());
-    const pages = Math.ceil(sorted.length / PAGE_SIZE);
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    
-    setAssignments(sorted.slice(start, end));
-    setTotalPages(pages);
+    async function loadAssignments() {
+      const allAssignments = await getAllAssignments();
+      const sorted = allAssignments.sort((a,b) => b.date.getTime() - a.date.getTime());
+      const pages = Math.ceil(sorted.length / PAGE_SIZE);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      
+      setAssignments(sorted.slice(start, end));
+      setTotalPages(pages);
+    }
+    loadAssignments();
   }, [currentPage]);
 
 

@@ -3,7 +3,7 @@ import { PaginationControls } from '@/components/shared/pagination';
 import { MaterialFilters } from '@/components/materials/material-filters';
 import { MaterialCard } from '@/components/materials/material-card';
 import type { Subject, FileType, CourseMaterial } from '@/lib/types';
-import { courseMaterials } from '@/lib/mock-data';
+import { getAllCourseMaterials } from '@/lib/actions';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -20,26 +20,30 @@ export default function MaterialsPage() {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    let filtered = courseMaterials;
+    async function loadMaterials() {
+      const courseMaterials = await getAllCourseMaterials();
+      let filtered = courseMaterials;
 
-    if (subjectFilter && subjectFilter !== 'All') {
-      filtered = filtered.filter(m => m.subject === subjectFilter);
+      if (subjectFilter && subjectFilter !== 'All') {
+        filtered = filtered.filter(m => m.subject === subjectFilter);
+      }
+      if (fileTypeFilter && fileTypeFilter !== 'All') {
+        filtered = filtered.filter(m => m.fileType === fileTypeFilter);
+      }
+      if (query) {
+        filtered = filtered.filter(m => m.filename.toLowerCase().includes(query.toLowerCase()));
+      }
+
+      const sorted = filtered.sort((a,b) => b.uploadDate.getTime() - a.uploadDate.getTime());
+
+      const pages = Math.ceil(sorted.length / PAGE_SIZE);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+
+      setMaterials(sorted.slice(start, end));
+      setTotalPages(pages);
     }
-    if (fileTypeFilter && fileTypeFilter !== 'All') {
-      filtered = filtered.filter(m => m.fileType === fileTypeFilter);
-    }
-    if (query) {
-      filtered = filtered.filter(m => m.filename.toLowerCase().includes(query.toLowerCase()));
-    }
-
-    const sorted = filtered.sort((a,b) => b.uploadDate.getTime() - a.uploadDate.getTime());
-
-    const pages = Math.ceil(sorted.length / PAGE_SIZE);
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-
-    setMaterials(sorted.slice(start, end));
-    setTotalPages(pages);
+    loadMaterials();
   }, [currentPage, subjectFilter, fileTypeFilter, query]);
 
   return (

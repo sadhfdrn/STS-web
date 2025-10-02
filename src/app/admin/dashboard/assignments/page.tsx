@@ -2,12 +2,11 @@ import { AssignmentForm } from "@/components/admin/assignment-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import type { Assignment } from "@/lib/types";
-import { assignments } from "@/lib/mock-data";
+import { getAssignments } from "@/lib/db";
 
 async function getRecentAssignments() {
-    return assignments
-        .sort((a, b) => b.date.getTime() - a.date.getTime())
-        .slice(0, 5);
+    const assignments = await getAssignments();
+    return assignments.slice(0, 5);
 }
 
 export default async function AdminAssignmentsPage() {

@@ -74,7 +74,7 @@ export async function login(prevState: any, formData: FormData) {
     const sessionCookie = await encrypt({ session, expires });
 
     // Save the session in a cookie
-    cookies().set('session', sessionCookie, {
+    (await cookies()).set('session', sessionCookie, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       expires,
@@ -88,12 +88,12 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 export async function logout() {
-  cookies().delete('session');
+  (await cookies()).delete('session');
   redirect('/login');
 }
 
 export async function getSession(): Promise<Session | null> {
-  const sessionCookie = cookies().get('session')?.value;
+  const sessionCookie = (await cookies()).get('session')?.value;
   if (!sessionCookie) return null;
   
   const decryptedSession = await decrypt(sessionCookie);

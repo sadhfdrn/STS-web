@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { PaginationControls } from '@/components/shared/pagination';
 import { format, subHours } from 'date-fns';
 import type { Notification } from '@/lib/types';
-import { notifications as allNotifications } from '@/lib/mock-data';
+import { getAllNotifications } from '@/lib/actions';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -16,22 +16,26 @@ export default function NotificationsPage() {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    const sorted = allNotifications.sort((a, b) => b.date.getTime() - a.date.getTime());
-    
-    const twentyFourHoursAgo = subHours(new Date(), 24);
-    const filtered = sorted.filter(n => {
-      if (n.submitted && n.submissionDate) {
-        return n.submissionDate.getTime() >= twentyFourHoursAgo.getTime();
-      }
-      return true;
-    });
+    async function loadNotifications() {
+      const allNotifications = await getAllNotifications();
+      const sorted = allNotifications.sort((a, b) => b.date.getTime() - a.date.getTime());
+      
+      const twentyFourHoursAgo = subHours(new Date(), 24);
+      const filtered = sorted.filter(n => {
+        if (n.submitted && n.submissionDate) {
+          return n.submissionDate.getTime() >= twentyFourHoursAgo.getTime();
+        }
+        return true;
+      });
 
-    const pages = Math.ceil(filtered.length / PAGE_SIZE);
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    
-    setNotifications(filtered.slice(start, end));
-    setTotalPages(pages);
+      const pages = Math.ceil(filtered.length / PAGE_SIZE);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      
+      setNotifications(filtered.slice(start, end));
+      setTotalPages(pages);
+    }
+    loadNotifications();
   }, [currentPage]);
 
 

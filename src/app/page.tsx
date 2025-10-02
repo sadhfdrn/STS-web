@@ -2,14 +2,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { notifications as allNotifications } from '@/lib/mock-data';
+import { getNotifications } from '@/lib/db';
 import type { Notification } from '@/lib/types';
 import { subHours } from 'date-fns';
-
-async function getNotifications() {
-  // Simulate async data fetching
-  return allNotifications;
-}
 
 
 export default async function Home() {

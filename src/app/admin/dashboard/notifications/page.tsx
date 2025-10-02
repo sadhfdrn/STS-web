@@ -2,12 +2,11 @@ import { NotificationForm } from "@/components/admin/notification-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import type { Notification } from "@/lib/types";
-import { notifications } from "@/lib/mock-data";
+import { getNotifications } from "@/lib/db";
 
 async function getRecentNotifications() {
-    return notifications
-        .sort((a,b) => b.date.getTime() - a.date.getTime())
-        .slice(0, 5);
+    const notifications = await getNotifications();
+    return notifications.slice(0, 5);
 }
 
 export default async function AdminNotificationsPage() {
