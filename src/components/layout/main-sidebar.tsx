@@ -50,13 +50,15 @@ export function MainSidebar() {
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton 
-                as={Link}
+                asChild
                 href={item.href}
                 isActive={pathname === item.href}
                 tooltip={item.tooltip}
               >
-                <item.icon />
-                <span>{item.label}</span>
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -68,13 +70,15 @@ export function MainSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  as={Link}
+                  asChild
                   href="/admin/dashboard"
                   tooltip="Admin Dashboard" 
                   isActive={pathname.startsWith('/admin')}
                 >
-                  <User />
-                  <span>Admin</span>
+                  <Link href="/admin/dashboard">
+                    <User />
+                    <span>Admin</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -89,13 +93,15 @@ export function MainSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
-                as={Link}
+                asChild
                 href="/login"
                 tooltip="Admin Login" 
                 isActive={pathname === '/login'}
               >
-                <LogIn />
-                <span>Login</span>
+                <Link href="/login">
+                  <LogIn />
+                  <span>Login</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
