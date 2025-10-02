@@ -13,8 +13,34 @@ export const NOTIFICATIONS: Notification[] = [
 ];
 
 export const ASSIGNMENTS: Assignment[] = [
-    { id: '1', title: 'Assignment 1: Probability Theory', description: 'Complete the exercises from Chapter 2.', subject: 'Statistics', deadline: addDays(now, 7).toISOString(), file_url: '#', file_type: 'pdf', filename: 'assignment-1.pdf', date: subDays(now, 2).toISOString() },
-    { id: '2', title: 'Essay: The Great Gatsby', description: 'Write a 1500-word essay on the themes of The Great Gatsby.', subject: 'English', deadline: addDays(now, 14).toISOString(), file_url: '#', file_type: 'pdf', filename: 'gatsby-essay-prompt.pdf', date: subDays(now, 4).toISOString() }
+    { 
+      id: '1', 
+      title: 'Assignment 1: Probability Theory', 
+      description: 'Complete the exercises from Chapter 2.', 
+      subject: 'Statistics', 
+      deadline: addDays(now, 7).toISOString(), 
+      file_url: '#', 
+      file_type: 'pdf', 
+      filename: 'assignment-1.pdf', 
+      date: subDays(now, 2).toISOString(),
+      answer_file_url: '#',
+      answer_file_type: 'pdf',
+      answer_filename: 'assignment-1-answers.pdf',
+    },
+    { 
+      id: '2', 
+      title: 'Essay: The Great Gatsby', 
+      description: 'Write a 1500-word essay on the themes of The Great Gatsby.', 
+      subject: 'English', 
+      deadline: addDays(now, 14).toISOString(), 
+      file_url: '#', 
+      file_type: 'pdf', 
+      filename: 'gatsby-essay-prompt.pdf', 
+      date: subDays(now, 4).toISOString(),
+      answer_file_url: null,
+      answer_file_type: null,
+      answer_filename: null,
+    }
 ];
 
 export const COURSE_MATERIALS: CourseMaterial[] = [
@@ -46,6 +72,10 @@ export function getAssignments({ page = 1, limit = 5 }: { page: number; limit: n
       data: paginatedData,
       totalPages: Math.ceil(ASSIGNMENTS.length / limit),
     };
+}
+
+export function getAssignmentById(id: string): Assignment | undefined {
+    return ASSIGNMENTS.find(a => a.id === id);
 }
 
 export function getMaterials({ page = 1, limit = 6, subject, fileType, query }: { page: number; limit: number; subject?: Subject | 'All'; fileType?: FileType | 'All'; query?: string }) {

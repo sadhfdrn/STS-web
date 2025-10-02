@@ -11,6 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +35,7 @@ const formSchema = z.object({
   subject: z.enum(subjects),
   deadline: z.date(),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
+  answerFile: z.instanceof(File).optional(),
 });
 
 function SubmitButton() {
@@ -167,11 +169,33 @@ export function AssignmentForm() {
               <FormLabel>Assignment File</FormLabel>
               <FormControl>
                 <Input 
+                    name="file"
                     type="file" 
                     accept="application/pdf,image/jpeg,image/png"
                     onChange={(e) => field.onChange(e.target.files?.[0])}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="answerFile"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Answer File (Optional)</FormLabel>
+              <FormControl>
+                <Input 
+                    name="answerFile"
+                    type="file" 
+                    accept="application/pdf,image/jpeg,image/png"
+                    onChange={(e) => field.onChange(e.target.files?.[0])}
+                />
+              </FormControl>
+              <FormDescription>
+                Upload the solution file for this assignment.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

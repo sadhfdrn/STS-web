@@ -27,4 +27,7 @@ export interface Assignment {
   file_type: 'pdf' | 'image';
   filename: string;
   date: string; // ISO string
+  answer_file_url?: string | null;
+  answer_file_type?: 'pdf' | 'image' | null;
+  answer_filename?: string | null;
 }

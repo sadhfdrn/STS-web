@@ -98,6 +98,7 @@ const assignmentSchema = z.object({
     subject: z.enum(['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science']),
     deadline: z.date(),
     file: z.instanceof(File).refine(file => file.size > 0, "File is required.").refine(file => ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type), "Only PDF and image files are allowed."),
+    answerFile: z.instanceof(File).optional(),
 });
 
 export async function addAssignment(formData: FormData) {
@@ -107,6 +108,7 @@ export async function addAssignment(formData: FormData) {
         subject: formData.get('subject'),
         deadline: new Date(formData.get('deadline') as string),
         file: formData.get('file'),
+        answerFile: formData.get('answerFile'),
     };
     
     const validatedFields = assignmentSchema.safeParse(rawFormData);
@@ -119,11 +121,22 @@ export async function addAssignment(formData: FormData) {
         };
     }
 
-    const { title, description, subject, deadline, file } = validatedFields.data;
+    const { title, description, subject, deadline, file, answerFile } = validatedFields.data;
 
     // Simulate file upload
     const mockFileUrl = `https://files.catbox.moe/mock_assignment_${file.name}`;
     const fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
+    
+    let answer_file_url = null;
+    let answer_file_type = null;
+    let answer_filename = null;
+    
+    if (answerFile && answerFile.size > 0) {
+        answer_file_url = `https://files.catbox.moe/mock_answer_${answerFile.name}`;
+        answer_file_type = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
+        answer_filename = answerFile.name;
+    }
+
 
     const newAssignment = {
         id: (ASSIGNMENTS.length + 1).toString(),
@@ -135,6 +148,9 @@ export async function addAssignment(formData: FormData) {
         file_type: fileType,
         filename: file.name,
         date: new Date().toISOString(),
+        answer_file_url,
+        answer_file_type,
+        answer_filename,
     };
 
     ASSIGNMENTS.unshift(newAssignment);

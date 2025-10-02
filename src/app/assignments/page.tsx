@@ -4,8 +4,9 @@ import { PaginationControls } from '@/components/shared/pagination';
 import { format, formatDistanceToNow } from 'date-fns';
 import type { Assignment } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, Image } from 'lucide-react';
+import { Download, FileText, Image, BookCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 const fileTypeIcons = {
   pdf: <FileText className="h-6 w-6 text-destructive" />,
@@ -42,15 +43,25 @@ export default function AssignmentsPage({ searchParams }: { searchParams?: { pag
                     <span className="text-muted-foreground"> ({formatDistanceToNow(new Date(assignment.deadline), { addSuffix: true })})</span>
                 </p>
               </CardContent>
-              <CardFooter className='gap-4'>
-                {fileTypeIcons[assignment.file_type]}
-                <span className='font-medium'>{assignment.filename}</span>
-                <Button asChild className="ml-auto">
-                    <a href={assignment.file_url} target="_blank" rel="noopener noreferrer">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                    </a>
-                </Button>
+              <CardFooter className="bg-muted/50 p-4 flex items-center justify-between">
+                <div className='flex items-center gap-4'>
+                    {fileTypeIcons[assignment.file_type]}
+                    <span className='font-medium'>{assignment.filename}</span>
+                    <Button asChild size="sm">
+                        <a href={assignment.file_url} target="_blank" rel="noopener noreferrer">
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                        </a>
+                    </Button>
+                </div>
+                {assignment.answer_file_url && (
+                     <Button asChild size="sm" variant="secondary">
+                        <Link href={`/assignments/${assignment.id}/answer`}>
+                            <BookCheck className="mr-2 h-4 w-4" />
+                            View Answer
+                        </Link>
+                    </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
