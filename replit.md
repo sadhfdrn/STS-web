@@ -9,6 +9,12 @@ The application is built with Next.js 15, uses React Server Components for optim
 ## Recent Changes
 
 **October 2, 2025:**
+- **PostgreSQL Database Migration**: Migrated from in-memory storage to PostgreSQL database
+  - Created database tables for notifications, course_materials, and assignments
+  - Implemented database connection module (`src/lib/db.ts`) with connection pooling
+  - Updated all server actions to use database operations
+  - Updated all pages to fetch data from PostgreSQL instead of mock data
+  - Fixed Next.js 15 async cookies compliance in authentication module
 - **Design Modernization**: Updated color scheme from green to vibrant purple/blue gradients for a more modern look
 - **Hero Section Enhancement**: Added gradient background with texture overlay, larger typography, and clear CTAs
 - **Card Design Improvements**: Added hover animations, gradient accents, and better visual hierarchy
@@ -55,14 +61,22 @@ The application uses Next.js 15 with the App Router pattern and React Server Com
 - Supports multiple admin users with email/password authentication
 
 **Data Layer:**
-- Currently uses in-memory mock data stored in `src/lib/mock-data.ts`
+- PostgreSQL database for persistent data storage
+- Database connection pooling managed in `src/lib/db.ts` using `pg` library
+- Database schema with three main tables:
+  - `notifications`: Stores user notifications and announcements
+  - `course_materials`: Stores uploaded course materials with metadata
+  - `assignments`: Stores assignments with optional answer files
 - Data structures defined in TypeScript types (`src/lib/types.ts`)
-- Server Actions in `src/lib/actions.ts` handle data mutations
-- Designed for easy migration to database (PostgreSQL recommended based on blueprint)
+- Server Actions in `src/lib/actions.ts` handle data mutations and queries
+- Legacy mock data file (`src/lib/mock-data.ts`) kept for reference but no longer used
 
 **Server Actions:**
-- `addNotification`: Creates new notifications with validation using Zod schema
-- `addMaterial`: Handles file uploads to Catbox API and saves metadata (placeholder implementation)
+- `addNotification`: Creates new notifications with validation using Zod schema and saves to database
+- `addMaterial`: Handles file uploads to Catbox API and saves metadata to database
+- `addAssignment`: Creates assignments with file uploads and automatic notification creation
+- `markAssignmentAsSubmitted`: Updates assignment and notification submission status in database
+- `getAllNotifications`, `getAllCourseMaterials`, `getAllAssignments`: Fetch data from PostgreSQL for client components
 - Form validation using `react-hook-form` with `@hookform/resolvers/zod`
 - Path revalidation after mutations to update cached pages
 
@@ -114,6 +128,10 @@ The application uses Next.js 15 with the App Router pattern and React Server Com
 - **@genkit-ai/google-genai**: Google AI plugin for Genkit
 - **@genkit-ai/next**: Next.js integration for Genkit
 
+**Database:**
+- **pg (node-postgres)**: PostgreSQL client for Node.js with connection pooling
+- **@types/pg**: TypeScript type definitions for node-postgres
+
 **Utilities:**
 - **date-fns**: Modern date utility library for formatting and manipulation
 - **dotenv**: Environment variable management
@@ -130,6 +148,8 @@ The application uses Next.js 15 with the App Router pattern and React Server Com
 - **patch-package**: For maintaining patches to npm packages
 - **tsx**: TypeScript execution for dev scripts
 
-**Planned Integrations:**
-- **PostgreSQL**: Database for storing notifications and course material metadata (currently using mock data)
-- The application is designed to support database integration with minimal refactoring of the data access layer
+**Database Configuration:**
+- PostgreSQL database provided by Replit's built-in database service
+- Connection managed via environment variables (DATABASE_URL, PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE)
+- Tables created: `notifications`, `course_materials`, `assignments`
+- All CRUD operations handled through connection pool for optimal performance
