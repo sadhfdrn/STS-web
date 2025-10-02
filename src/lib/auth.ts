@@ -1,19 +1,52 @@
-// @ts-nocheck
 'use server';
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-// Mocking environment variables as specified in the prompt
-const ADMIN_CREDENTIALS = {
-  "admin1@example.com": "password_admin1",
-  "admin2@example.com": "password_admin2",
-  "test@example.com": "samuel",
-};
+import { SignJWT, jwtVerify } from 'jose';
 
 export type Session = {
   email: string;
 };
+
+// This secret is used to sign the session cookie.
+// It should be stored in an environment variable.
+const secretKey = process.env.SESSION_SECRET || 'a_default_secret_that_is_not_secure';
+const key = new TextEncoder().encode(secretKey);
+
+async function encrypt(payload: any) {
+  return await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('1d')
+    .sign(key);
+}
+
+async function decrypt(input: string): Promise<any> {
+  try {
+    const { payload } = await jwtVerify(input, key, {
+      algorithms: ['HS256'],
+    });
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+// Helper to get all admin users from environment variables
+function getAdminUsers() {
+    const admins: Record<string, string> = {};
+    let i = 1;
+    while (process.env[`ADMIN_${i}_EMAIL`]) {
+        const email = process.env[`ADMIN_${i}_EMAIL`];
+        const password = process.env[`ADMIN_${i}_PASSWORD`];
+        if (email && password) {
+            admins[email] = password;
+        }
+        i++;
+    }
+    return admins;
+}
+
 
 export async function login(prevState: any, formData: FormData) {
   const email = formData.get('email') as string;
@@ -23,17 +56,23 @@ export async function login(prevState: any, formData: FormData) {
     return { message: 'Email and password are required.' };
   }
 
-  const expectedPassword = ADMIN_CREDENTIALS[email as keyof typeof ADMIN_CREDENTIALS];
+  const adminUsers = getAdminUsers();
+  const expectedPassword = adminUsers[email];
 
   if (password === expectedPassword) {
+    // Create the session
     const session: Session = { email };
-    cookies().set('session', JSON.stringify(session), {
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
+    const sessionCookie = await encrypt({ session, expires });
+
+    // Save the session in a cookie
+    cookies().set('session', sessionCookie, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24, // 1 day
+      expires,
       path: '/',
     });
-    // This redirect will be caught by the try-catch in the form action
+    
     redirect('/admin/dashboard');
   }
 
@@ -48,10 +87,14 @@ export async function logout() {
 export async function getSession(): Promise<Session | null> {
   const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) return null;
-  try {
-    // In a real app, you'd verify a JWT here.
-    return JSON.parse(sessionCookie);
-  } catch {
+  
+  const decryptedSession = await decrypt(sessionCookie);
+  if (!decryptedSession) return null;
+  
+  // Check if session has expired
+  if (new Date(decryptedSession.expires) < new Date()) {
     return null;
   }
+
+  return decryptedSession.session;
 }
