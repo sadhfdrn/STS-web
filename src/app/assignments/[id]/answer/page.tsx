@@ -1,11 +1,19 @@
-import { getAssignmentById } from '@/lib/mock-data';
+'use client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { FileWarning, Image } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FileWarning } from 'lucide-react';
+import { useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { Assignment } from '@/lib/types';
 
 export default function AssignmentAnswerPage({ params }: { params: { id: string } }) {
-  const assignment = getAssignmentById(params.id);
+  const firestore = useFirestore();
+  const assignmentRef = firestore ? doc(firestore, 'assignments', params.id) : null;
+  const { data: assignment, isLoading } = useDoc<Assignment>(assignmentRef);
+
+  if (isLoading) {
+      return <p>Loading answer...</p>
+  }
 
   if (!assignment) {
     return (
@@ -17,7 +25,7 @@ export default function AssignmentAnswerPage({ params }: { params: { id: string 
     );
   }
 
-  if (!assignment.answer_file_url) {
+  if (!assignment.answerFileUrl) {
     return (
       <Alert>
         <FileWarning className="h-4 w-4" />
@@ -32,14 +40,14 @@ export default function AssignmentAnswerPage({ params }: { params: { id: string 
       <h1 className="font-headline text-3xl font-bold">Answer for: {assignment.title}</h1>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">{assignment.answer_filename}</CardTitle>
+          <CardTitle className="font-headline">{assignment.answerFilename}</CardTitle>
         </CardHeader>
         <CardContent>
-          {assignment.answer_file_type === 'image' ? (
+          {assignment.answerFileType === 'image' ? (
             // In a real app, you would use next/image. For mock data, a simple img is fine.
             // eslint-disable-next-line @next/next/no-img-element
             <img 
-              src={assignment.answer_file_url} 
+              src={assignment.answerFileUrl} 
               alt={`Answer for ${assignment.title}`} 
               className="rounded-lg border w-full h-auto"
             />
@@ -47,7 +55,7 @@ export default function AssignmentAnswerPage({ params }: { params: { id: string 
             <div className='flex flex-col items-center justify-center text-center bg-muted/50 p-8 rounded-lg border-2 border-dashed'>
                 <p className='text-lg font-medium mb-4'>This is a PDF file.</p>
                 <Button asChild>
-                    <a href={assignment.answer_file_url} target="_blank" rel="noopener noreferrer">
+                    <a href={assignment.answerFileUrl} target="_blank" rel="noopener noreferrer">
                         View PDF
                     </a>
                 </Button>

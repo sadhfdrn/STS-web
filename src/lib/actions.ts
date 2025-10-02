@@ -3,9 +3,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { NOTIFICATIONS, COURSE_MATERIALS, ASSIGNMENTS } from './mock-data';
 import { format } from 'date-fns';
 import fetch from 'node-fetch';
+import { getFirestore, collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 
 async function uploadToCatbox(file: File) {
     if (!file || file.size === 0) return null;
@@ -54,16 +55,22 @@ export async function addNotification(formData: FormData) {
   }
   
   const { title, description } = validatedFields.data;
+  
+  const { firestore } = initializeFirebase();
+  const notificationsCollection = collection(firestore, 'notifications');
 
-  // Simulate adding to database
-  const newNotification = {
-    id: (NOTIFICATIONS.length + 1).toString(),
-    title,
-    description,
-    date: new Date().toISOString(),
-  };
+  try {
+    await addDoc(notificationsCollection, {
+        title,
+        description,
+        date: serverTimestamp(),
+        submitted: false,
+    });
+  } catch (error) {
+      console.error("Error adding notification:", error);
+      return { success: false, message: 'Failed to add notification.'};
+  }
 
-  NOTIFICATIONS.unshift(newNotification);
 
   // Revalidate paths to show new data
   revalidatePath('/admin/dashboard/notifications');
@@ -99,18 +106,23 @@ export async function addMaterial(formData: FormData) {
     let fileType: 'pdf' | 'image' | 'video' = 'pdf';
     if(file.type.startsWith('image/')) fileType = 'image';
     if(file.type.startsWith('video/')) fileType = 'video';
+    
+    const { firestore } = initializeFirebase();
+    const materialsCollection = collection(firestore, 'course_materials');
 
-    // Simulate adding to database
-    const newMaterial = {
-        id: (COURSE_MATERIALS.length + 1).toString(),
-        subject: subject as any,
-        filename: file.name,
-        file_url: fileUrl,
-        file_type: fileType,
-        upload_date: new Date().toISOString(),
-    };
+    try {
+        await addDoc(materialsCollection, {
+            subject: subject as any,
+            filename: file.name,
+            fileUrl: fileUrl,
+            fileType: fileType,
+            uploadDate: serverTimestamp(),
+        });
+    } catch(e) {
+        console.error("Error adding material: ", e);
+        return { success: false, message: "Failed to upload material."};
+    }
 
-    COURSE_MATERIALS.unshift(newMaterial);
 
     revalidatePath('/admin/dashboard/materials');
     revalidatePath('/materials');
@@ -151,6 +163,7 @@ export async function addAssignment(formData: FormData) {
     }
 
     const { title, description, subject, deadline, file, answerFile } = validatedFields.data;
+    const { firestore } = initializeFirebase();
 
     // Upload assignment file
     const fileUrl = await uploadToCatbox(file);
@@ -160,43 +173,50 @@ export async function addAssignment(formData: FormData) {
     const fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
     
     // Upload answer file if it exists
-    let answer_file_url = null;
-    let answer_file_type = null;
-    let answer_filename = null;
+    let answerFileUrl = null;
+    let answerFileType = null;
+    let answerFilename = null;
     
     if (answerFile && answerFile.size > 0) {
-        answer_file_url = await uploadToCatbox(answerFile);
-        if (answer_file_url) {
-            answer_file_type = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
-            answer_filename = answerFile.name;
+        answerFileUrl = await uploadToCatbox(answerFile);
+        if (answerFileUrl) {
+            answerFileType = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
+            answerFilename = answerFile.name;
         }
     }
 
-    const newAssignment = {
-        id: (ASSIGNMENTS.length + 1).toString(),
-        title,
-        description,
-        subject,
-        deadline: deadline.toISOString(),
-        file_url: fileUrl,
-        file_type: fileType,
-        filename: file.name,
-        date: new Date().toISOString(),
-        answer_file_url,
-        answer_file_type,
-        answer_filename,
-    };
+    const assignmentsCollection = collection(firestore, 'assignments');
+    const notificationsCollection = collection(firestore, 'notifications');
 
-    ASSIGNMENTS.unshift(newAssignment);
-    
-    // Also create a notification
-    const newNotification = {
-        id: (NOTIFICATIONS.length + 1).toString(),
-        title: `New Assignment: ${title}`,
-        description: `${description}. Deadline: ${format(deadline, 'PP')}. View details in the Assignments section.`,
-        date: new Date().toISOString(),
-    };
-    NOTIFICATIONS.unshift(newNotification);
+    try {
+        const notificationDocRef = await addDoc(notificationsCollection, {
+            title: `New Assignment: ${title}`,
+            description: `${description}. Deadline: ${format(deadline, 'PP')}. View details in the Assignments section.`,
+            date: serverTimestamp(),
+            submitted: false
+        });
+
+        await addDoc(assignmentsCollection, {
+            title,
+            description,
+            subject,
+            deadline,
+            fileUrl: fileUrl,
+            fileType: fileType,
+            filename: file.name,
+            date: serverTimestamp(),
+            answerFileUrl,
+            answerFileType,
+            answerFilename,
+            submitted: false,
+            notificationId: notificationDocRef.id
+        });
+
+    } catch (e) {
+        console.error("Error creating assignment and notification:", e);
+        return { success: false, message: 'Failed to create assignment.'};
+    }
+
 
     revalidatePath('/admin/dashboard/assignments');
     revalidatePath('/assignments');
@@ -205,4 +225,30 @@ export async function addAssignment(formData: FormData) {
     revalidatePath('/');
 
     return { success: true, message: 'Assignment created successfully.' };
+}
+
+export async function markAssignmentAsSubmitted(assignmentId: string, notificationId: string) {
+    const { firestore } = initializeFirebase();
+    const assignmentRef = doc(firestore, 'assignments', assignmentId);
+    const notificationRef = doc(firestore, 'notifications', notificationId);
+    const submissionDate = serverTimestamp();
+
+    try {
+        await updateDoc(assignmentRef, {
+            submitted: true,
+            submissionDate: submissionDate
+        });
+        await updateDoc(notificationRef, {
+            submitted: true,
+            submissionDate: submissionDate
+        });
+    } catch(e) {
+        console.error("Error marking as submitted:", e);
+        return { success: false, message: 'Failed to mark as submitted.' };
+    }
+
+    revalidatePath('/assignments');
+    revalidatePath('/');
+
+    return { success: true, message: 'Assignment marked as submitted.' };
 }

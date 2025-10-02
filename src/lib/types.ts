@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export type Subject = 'Statistics' | 'Physics' | 'English' | 'Mathematics' | 'Computer Science';
 export type FileType = 'pdf' | 'image' | 'video';
 
@@ -5,16 +7,18 @@ export interface Notification {
   id: string;
   title: string;
   description: string;
-  date: string; // ISO string
+  date: Timestamp;
+  submitted?: boolean;
+  submissionDate?: Timestamp;
 }
 
 export interface CourseMaterial {
   id: string;
   subject: Subject;
   filename: string;
-  file_url: string;
-  file_type: FileType;
-  upload_date: string; // ISO string
+  fileUrl: string;
+  fileType: FileType;
+  uploadDate: Timestamp;
 }
 
 export interface Assignment {
@@ -22,12 +26,15 @@ export interface Assignment {
   title: string;
   description: string;
   subject: Subject;
-  deadline: string; // ISO string
-  file_url: string;
-  file_type: 'pdf' | 'image';
+  deadline: Timestamp;
+  fileUrl: string;
+  fileType: 'pdf' | 'image';
   filename: string;
-  date: string; // ISO string
-  answer_file_url?: string | null;
-  answer_file_type?: 'pdf' | 'image' | null;
-  answer_filename?: string | null;
+  date: Timestamp;
+  answerFileUrl?: string | null;
+  answerFileType?: 'pdf' | 'image' | null;
+  answerFilename?: string | null;
+  submitted?: boolean;
+  submissionDate?: Timestamp;
+  notificationId?: string;
 }

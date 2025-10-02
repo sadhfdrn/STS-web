@@ -1,12 +1,48 @@
-import { getNotifications } from '@/lib/mock-data';
+'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import type { Notification } from '@/lib/types';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { subHours } from 'date-fns';
 
 export default function Home() {
-  const latestNotifications = getNotifications({ page: 1, limit: 3 }).data;
+  const firestore = useFirestore();
+
+  const twentyFourHoursAgo = subHours(new Date(), 24);
+  const twentyFourHoursAgoTimestamp = Timestamp.fromDate(twentyFourHoursAgo);
+
+  const notificationsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'notifications'),
+      where('submitted', '==', false),
+      orderBy('date', 'desc'),
+      limit(3)
+    );
+  }, [firestore]);
+  
+  const submittedNotificationsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'notifications'),
+      where('submitted', '==', true),
+      where('submissionDate', '>=', twentyFourHoursAgoTimestamp),
+      orderBy('submissionDate', 'desc')
+    );
+  }, [firestore, twentyFourHoursAgoTimestamp]);
+
+  const { data: latestNotifications, isLoading: isLoadingLatest } = useCollection<Notification>(notificationsQuery);
+  const { data: recentSubmitted, isLoading: isLoadingSubmitted } = useCollection<Notification>(submittedNotificationsQuery);
+
+  const combinedNotifications = [...(latestNotifications || []), ...(recentSubmitted || [])]
+    .sort((a, b) => b.date.toMillis() - a.date.toMillis())
+    .slice(0, 3);
+    
+  const isLoading = isLoadingLatest || isLoadingSubmitted;
+
 
   return (
     <div className="space-y-8 md:space-y-12">
@@ -41,23 +77,31 @@ export default function Home() {
           </Button>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {latestNotifications.map((notification: Notification) => (
-            <Card key={notification.id} className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 overflow-hidden">
-              <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-              <CardHeader className="pb-3">
-                <CardTitle className="font-headline text-xl group-hover:text-primary transition-colors">{notification.title}</CardTitle>
-                <CardDescription className="flex items-center gap-2 text-sm">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  {format(new Date(notification.date), 'MMMM d, yyyy')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="line-clamp-3 text-sm text-muted-foreground leading-relaxed">{notification.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {isLoading ? (
+             Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}><CardContent className="p-6">Loading...</CardContent></Card>
+             ))
+          ) : combinedNotifications.length > 0 ? (
+            combinedNotifications.map((notification: Notification) => (
+              <Card key={notification.id} className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 overflow-hidden">
+                <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                <CardHeader className="pb-3">
+                  <CardTitle className="font-headline text-xl group-hover:text-primary transition-colors">{notification.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-2 text-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {format(notification.date.toDate(), 'MMMM d, yyyy')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="line-clamp-3 text-sm text-muted-foreground leading-relaxed">{notification.description}</p>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <p>No new notifications.</p>
+          )}
         </div>
       </section>
     </div>

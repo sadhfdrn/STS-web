@@ -1,11 +1,23 @@
+'use client';
 import { NotificationForm } from "@/components/admin/notification-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getNotifications } from "@/lib/mock-data";
 import { format } from "date-fns";
-import { Separator } from "@/components/ui/separator";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
+import type { Notification } from "@/lib/types";
 
 export default function AdminNotificationsPage() {
-    const { data: recentNotifications } = getNotifications({ page: 1, limit: 5 });
+    const firestore = useFirestore();
+    const notificationsQuery = useMemoFirebase(() => {
+        if(!firestore) return null;
+        return query(
+            collection(firestore, 'notifications'),
+            orderBy('date', 'desc'),
+            limit(5)
+        );
+    }, [firestore]);
+
+    const { data: recentNotifications, isLoading } = useCollection<Notification>(notificationsQuery);
     
     return (
         <div className="grid gap-8 md:grid-cols-3">
@@ -24,15 +36,17 @@ export default function AdminNotificationsPage() {
                 <h2 className="text-2xl font-headline font-semibold mb-4">Recent Notifications</h2>
                  <Card>
                     <CardContent className="p-0">
-                        <ul className="divide-y">
-                           {recentNotifications.map(n => (
-                               <li key={n.id} className="p-4">
-                                   <h3 className="font-semibold">{n.title}</h3>
-                                   <p className="text-sm text-muted-foreground line-clamp-2">{n.description}</p>
-                                   <span className="text-xs text-muted-foreground/80">{format(new Date(n.date), 'PPpp')}</span>
-                               </li>
-                           ))}
-                        </ul>
+                        { isLoading ? <p className="p-4">Loading...</p> : (
+                            <ul className="divide-y">
+                            {recentNotifications && recentNotifications.map(n => (
+                                <li key={n.id} className="p-4">
+                                    <h3 className="font-semibold">{n.title}</h3>
+                                    <p className="text-sm text-muted-foreground line-clamp-2">{n.description}</p>
+                                    <span className="text-xs text-muted-foreground/80">{format(n.date.toDate(), 'PPpp')}</span>
+                                </li>
+                            ))}
+                            </ul>
+                        )}
                     </CardContent>
                  </Card>
             </div>
