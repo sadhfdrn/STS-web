@@ -1,0 +1,10 @@
+language = "nix"
+run = "npm run dev"
+
+[nix]
+channel = "stable-23_11"
+
+[deployment]
+run = ["npm", "run", "build"]
+buildOutput = ".next"
+deploymentTarget = "cloudrun"
