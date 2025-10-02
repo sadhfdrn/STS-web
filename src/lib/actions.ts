@@ -4,7 +4,15 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import fetch from 'node-fetch';
-import { addNotification as dbAddNotification, addCourseMaterial, addAssignment as dbAddAssignment, updateAssignmentSubmission } from './db';
+import { 
+    addNotification as dbAddNotification, 
+    addCourseMaterial as dbAddCourseMaterial, 
+    addAssignment as dbAddAssignment, 
+    updateAssignmentSubmission,
+    deleteNotification as dbDeleteNotification,
+    deleteAssignment as dbDeleteAssignment,
+    deleteCourseMaterial as dbDeleteMaterial
+} from './db';
 import type { Notification, Assignment, CourseMaterial, Subject } from './types';
 
 async function uploadToCatbox(file: File) {
@@ -38,12 +46,14 @@ async function uploadToCatbox(file: File) {
 const notificationSchema = z.object({
   title: z.string().min(5),
   description: z.string().min(10),
+  eventDate: z.string().optional(),
 });
 
 export async function addNotification(formData: FormData) {
   const validatedFields = notificationSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description'),
+    eventDate: formData.get('eventDate'),
   });
 
   if (!validatedFields.success) {
@@ -53,13 +63,14 @@ export async function addNotification(formData: FormData) {
     };
   }
   
-  const { title, description } = validatedFields.data;
+  const { title, description, eventDate } = validatedFields.data;
   
   const newNotification: Notification = {
       id: `notif-${Date.now()}`,
       title,
       description,
       date: new Date(),
+      eventDate: eventDate ? new Date(eventDate) : undefined,
       submitted: false,
   };
 
@@ -72,14 +83,17 @@ export async function addNotification(formData: FormData) {
   return { success: true, message: 'Notification added.' };
 }
 
+export async function deleteNotification(id: string) {
+    await dbDeleteNotification(id);
+    revalidatePath('/admin/dashboard/notifications');
+    revalidatePath('/notifications');
+    revalidatePath('/');
+    return { success: true, message: 'Notification deleted.' };
+}
+
 
 // --- Material Actions ---
 const subjectEnum: [Subject, ...Subject[]] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
-
-const materialSchema = z.object({
-    subject: z.enum(subjectEnum),
-});
-
 
 export async function addMaterial(formData: FormData) {
     const file = formData.get('file') as File | null;
@@ -108,12 +122,19 @@ export async function addMaterial(formData: FormData) {
         uploadDate: new Date(),
     };
 
-    await addCourseMaterial(newMaterial);
+    await dbAddCourseMaterial(newMaterial);
 
     revalidatePath('/admin/dashboard/materials');
     revalidatePath('/materials');
 
     return { success: true, message: 'Material uploaded successfully.'};
+}
+
+export async function deleteMaterial(id: string) {
+    await dbDeleteMaterial(id);
+    revalidatePath('/admin/dashboard/materials');
+    revalidatePath('/materials');
+    return { success: true, message: 'Material deleted.' };
 }
 
 
@@ -206,6 +227,20 @@ export async function addAssignment(formData: FormData) {
     return { success: true, message: 'Assignment created successfully.' };
 }
 
+export async function deleteAssignment(id: string) {
+    const assignment = await getAssignmentById(id);
+    if (assignment?.notificationId) {
+        await dbDeleteNotification(assignment.notificationId);
+    }
+    await dbDeleteAssignment(id);
+    revalidatePath('/admin/dashboard/assignments');
+    revalidatePath('/assignments');
+    revalidatePath('/admin/dashboard/notifications');
+    revalidatePath('/notifications');
+    revalidatePath('/');
+    return { success: true, message: 'Assignment deleted.' };
+}
+
 export async function markAssignmentAsSubmitted(assignmentId: string, notificationId: string) {
     const success = await updateAssignmentSubmission(assignmentId, notificationId);
 
@@ -235,6 +270,6 @@ export async function getAllAssignments() {
 }
 
 export async function getAssignmentById(id: string) {
-    const assignments = await getAllAssignments();
-    return assignments.find(a => a.id === id);
+    const { getAssignmentById } = await import('./db');
+    return await getAssignmentById(id);
 }

@@ -5,6 +5,8 @@ import type { Subject, CourseMaterial } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { FileText, Image, Video } from "lucide-react";
 import { getCourseMaterials } from "@/lib/db";
+import { DeleteButton } from "@/components/admin/delete-button";
+import { deleteMaterial } from "@/lib/actions";
 
 const fileTypeIcons = {
   pdf: <FileText className="h-5 w-5 text-muted-foreground" />,
@@ -51,7 +53,7 @@ export default async function AdminMaterialsPage() {
                                         {materialsBySubject[subject].length > 0 ? (
                                             <ul className="divide-y">
                                                 {materialsBySubject[subject].map(m => (
-                                                    <li key={m.id} className="p-4 flex items-center space-x-4">
+                                                    <li key={m.id} className="p-4 flex items-center space-x-4 group">
                                                         <div>{fileTypeIcons[m.fileType]}</div>
                                                         <div className="flex-1">
                                                             <h3 className="font-semibold">{m.filename}</h3>
@@ -59,6 +61,12 @@ export default async function AdminMaterialsPage() {
                                                                 Uploaded {formatDistanceToNow(m.uploadDate, { addSuffix: true })}
                                                             </p>
                                                         </div>
+                                                        <DeleteButton
+                                                            id={m.id}
+                                                            deleteAction={deleteMaterial}
+                                                            itemName={m.filename}
+                                                            itemType="Material"
+                                                        />
                                                     </li>
                                                 ))}
                                             </ul>

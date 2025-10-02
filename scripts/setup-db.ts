@@ -18,6 +18,7 @@ async function setupDatabase() {
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         date TIMESTAMPTZ NOT NULL,
+        event_date TIMESTAMPTZ,
         submitted BOOLEAN DEFAULT FALSE,
         submission_date TIMESTAMPTZ
       );

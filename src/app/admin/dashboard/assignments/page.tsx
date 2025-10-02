@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { format } from "date-fns";
 import type { Assignment } from "@/lib/types";
 import { getAssignments } from "@/lib/db";
+import { DeleteButton } from "@/components/admin/delete-button";
+import { deleteAssignment } from "@/lib/actions";
 
 async function getRecentAssignments() {
     const assignments = await getAssignments();
@@ -31,9 +33,19 @@ export default async function AdminAssignmentsPage() {
                     <CardContent className="p-0">
                         <ul className="divide-y">
                         {recentAssignments.map(a => (
-                            <li key={a.id} className="p-4">
-                                <h3 className="font-semibold">{a.title}</h3>
-                                <p className="text-sm text-muted-foreground line-clamp-2">{a.description}</p>
+                            <li key={a.id} className="p-4 group">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-semibold">{a.title}</h3>
+                                        <p className="text-sm text-muted-foreground line-clamp-2">{a.description}</p>
+                                    </div>
+                                    <DeleteButton
+                                        id={a.id}
+                                        deleteAction={deleteAssignment}
+                                        itemName={a.title}
+                                        itemType="Assignment"
+                                    />
+                                </div>
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
                                     <span className="text-xs font-medium text-primary">{a.subject}</span>
                                     <span className="text-xs text-muted-foreground/80">Deadline: {format(a.deadline, 'PP')}</span>

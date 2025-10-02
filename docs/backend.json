@@ -19,6 +19,11 @@
           "description": "Date when the notification was created or posted.",
           "format": "date-time"
         },
+        "eventDate": {
+          "type": "string",
+          "description": "Optional date for an event or deadline associated with the notification.",
+          "format": "date-time"
+        },
         "submitted": {
           "type": "boolean",
           "description": "Boolean that denotes whether the notification represents assignment submission."

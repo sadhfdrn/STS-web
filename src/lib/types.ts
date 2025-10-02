@@ -7,6 +7,7 @@ export interface Notification {
   title: string;
   description: string;
   date: Date;
+  eventDate?: Date;
   submitted?: boolean;
   submissionDate?: Date;
 }
