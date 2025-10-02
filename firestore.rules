@@ -1,25 +1,34 @@
 /**
- * @description This ruleset provides public read access to notifications, course materials, and assignments,
- * allowing any user to view these resources. Write access (create, update, delete) is disabled to protect
- * data integrity, as these collections are intended to be managed by authorized personnel only.
- * @data_structure
- * - /notifications/{notificationId}
- * - /course_materials/{courseMaterialId}
- * - /assignments/{assignmentId}
- * @key_security_decisions
- * - Public read access for all collections.
- * - Write access is disabled on all collections to prevent unauthorized modifications.
+ * @fileoverview Firestore Security Rules for Prototyping.
+ *
+ * Core Philosophy:
+ * This ruleset is in prototyping mode. It prioritizes strong authorization
+ * while relaxing data validation to accelerate development.  The rules
+ * enforce access controls based on ownership where applicable, but do NOT
+ * validate the specific data shapes.
+ *
+ * Data Structure:
+ * The Firestore database contains three top-level collections: `notifications`,
+ * `course_materials`, and `assignments`.  All collections are treated as publicly
+ * readable, but write access is restricted to prevent unauthorized modifications.
+ *
+ * Key Security Decisions:
+ * - Public Read Access: `notifications`, `course_materials`, and `assignments`
+ *   are publicly readable.  This is suitable for prototyping but should be
+ *   reviewed before production.
+ * - No User Listing: Listing all users is disallowed.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows anyone to read notifications. Write operations are disabled.
+     * @description Allows public read access to notifications, but restricts write access.
      * @path /notifications/{notificationId}
-     * @allow (get, list) Anyone can read notifications.
-     * @deny (create, update, delete) No one can create, update, or delete notifications through client-side rules.
-     * @principle Provides public read access to notifications, while preventing unauthorized data modification.
+     * @allow get, list: Any unauthenticated user can read.
+     * @allow create, update, delete: No one can write.
+     * @deny create, update, delete: Always.
+     * @principle Public read, no writes allowed.
      */
     match /notifications/{notificationId} {
       allow get, list: if true;
@@ -27,11 +36,12 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows anyone to read course materials. Write operations are disabled.
+     * @description Allows public read access to course materials, but restricts write access.
      * @path /course_materials/{courseMaterialId}
-     * @allow (get, list) Anyone can read course materials.
-     * @deny (create, update, delete) No one can create, update, or delete course materials through client-side rules.
-     * @principle Provides public read access to course materials, while preventing unauthorized data modification.
+     * @allow get, list: Any unauthenticated user can read.
+     * @allow create, update, delete: No one can write.
+     * @deny create, update, delete: Always.
+     * @principle Public read, no writes allowed.
      */
     match /course_materials/{courseMaterialId} {
       allow get, list: if true;
@@ -39,11 +49,12 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows anyone to read assignments. Write operations are disabled.
+     * @description Allows public read access to assignments, but restricts write access.
      * @path /assignments/{assignmentId}
-     * @allow (get, list) Anyone can read assignments.
-     * @deny (create, update, delete) No one can create, update, or delete assignments through client-side rules.
-     * @principle Provides public read access to assignments, while preventing unauthorized data modification.
+     * @allow get, list: Any unauthenticated user can read.
+     * @allow create, update, delete: No one can write.
+     * @deny create, update, delete: Always.
+     * @principle Public read, no writes allowed.
      */
     match /assignments/{assignmentId} {
       allow get, list: if true;
