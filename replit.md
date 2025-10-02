@@ -6,6 +6,17 @@ StatsSite is a Next.js-based web application designed for a university Statistic
 
 The application is built with Next.js 15, uses React Server Components for optimal performance, and features a modern UI built with shadcn/ui components and Tailwind CSS. It implements a custom authentication system for admin access and provides a responsive, accessible interface with dark mode support.
 
+## Recent Changes
+
+**October 2, 2025:**
+- **Design Modernization**: Updated color scheme from green to vibrant purple/blue gradients for a more modern look
+- **Hero Section Enhancement**: Added gradient background with texture overlay, larger typography, and clear CTAs
+- **Card Design Improvements**: Added hover animations, gradient accents, and better visual hierarchy
+- **Mobile Optimization**: Implemented responsive design with proper breakpoints for mobile, tablet, and desktop views
+  - Responsive text sizing across all breakpoints
+  - Mobile-first button layouts (stacking on mobile, horizontal on desktop)
+  - Optimized spacing and padding for smaller screens
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -24,9 +35,10 @@ The application uses Next.js 15 with the App Router pattern and React Server Com
 
 **Styling:**
 - Uses Tailwind CSS with CSS variables for theming
-- Custom color scheme based on forest green (#388E3C) as primary color
+- Modern color scheme based on purple/blue gradients (Primary: HSL 262 83% 58%)
 - Supports light and dark modes with theme persistence via localStorage
 - Typography: Space Grotesk for headings, Inter for body text
+- Fully responsive design with mobile-first approach
 
 **State Management:**
 - React Context API for theme and session management
