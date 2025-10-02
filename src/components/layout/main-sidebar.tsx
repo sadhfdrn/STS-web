@@ -51,7 +51,6 @@ export function MainSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton 
                 asChild
-                href={item.href}
                 isActive={pathname === item.href}
                 tooltip={item.tooltip}
               >
@@ -71,7 +70,6 @@ export function MainSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild
-                  href="/admin/dashboard"
                   tooltip="Admin Dashboard" 
                   isActive={pathname.startsWith('/admin')}
                 >
@@ -94,7 +92,6 @@ export function MainSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton 
                 asChild
-                href="/login"
                 tooltip="Admin Login" 
                 isActive={pathname === '/login'}
               >
