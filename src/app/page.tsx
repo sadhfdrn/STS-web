@@ -9,21 +9,21 @@ export default function Home() {
   const latestNotifications = getNotifications({ page: 1, limit: 3 }).data;
 
   return (
-    <div className="space-y-12">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-12 shadow-2xl">
+    <div className="space-y-8 md:space-y-12">
+      <section className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-6 sm:p-8 md:p-12 shadow-2xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAtMTRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bS0xNCAwYzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDE0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-20"></div>
         <div className="relative z-10">
-          <h1 className="font-headline text-5xl font-bold text-white md:text-6xl">
+          <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white">
             Welcome to StatsSite
           </h1>
-          <p className="mt-4 text-xl text-white/90 max-w-3xl">
+          <p className="mt-3 md:mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl">
             Your central hub for the 100-level Statistics department. Find course materials, announcements, and more.
           </p>
-          <div className="mt-8 flex gap-4">
-            <Button asChild size="lg" variant="secondary" className="font-semibold shadow-xl">
+          <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <Button asChild size="lg" variant="secondary" className="font-semibold shadow-xl w-full sm:w-auto">
               <Link href="/materials">Explore Materials</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/20 hover:text-white font-semibold">
+            <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/20 hover:text-white font-semibold w-full sm:w-auto">
               <Link href="/notifications">Latest Updates</Link>
             </Button>
           </div>
@@ -31,12 +31,12 @@ export default function Home() {
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 md:mb-6">
           <div>
-            <h2 className="font-headline text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Latest Notifications</h2>
-            <p className="text-muted-foreground mt-1">Stay updated with the latest announcements</p>
+            <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Latest Notifications</h2>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Stay updated with the latest announcements</p>
           </div>
-          <Button asChild variant="ghost" className="text-primary hover:text-primary/80">
+          <Button asChild variant="ghost" className="text-primary hover:text-primary/80 self-start sm:self-auto">
             <Link href="/notifications">View all →</Link>
           </Button>
         </div>
