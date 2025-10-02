@@ -30,12 +30,14 @@ export function MaterialFilters() {
   }, 300);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-card">
-      <Input
-        placeholder="Search by filename..."
-        defaultValue={searchParams.get('query')?.toString()}
-        onChange={(e) => handleSearch(e.target.value)}
-      />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border rounded-lg bg-card">
+      <div className="sm:col-span-2 lg:col-span-1">
+        <Input
+          placeholder="Search by filename..."
+          defaultValue={searchParams.get('query')?.toString()}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
+      </div>
       <Select
         defaultValue={searchParams.get('subject')?.toString() || 'All'}
         onValueChange={(value) => handleFilterChange('subject', value)}

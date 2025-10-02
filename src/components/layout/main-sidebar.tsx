@@ -49,14 +49,16 @@ export function MainSidebar() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} passHref>
+              <Link href={item.href} passHref legacyBehavior>
                 <SidebarMenuButton 
                   isActive={pathname === item.href}
                   tooltip={item.tooltip}
-                  asChild={false}
+                  asChild
                 >
-                  <item.icon />
-                  <span>{item.label}</span>
+                  <a>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </a>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
@@ -68,10 +70,12 @@ export function MainSidebar() {
           <>
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link href="/admin/dashboard" passHref>
-                  <SidebarMenuButton tooltip="Admin Dashboard" isActive={pathname.startsWith('/admin')}>
-                    <User />
-                    <span>Admin</span>
+                <Link href="/admin/dashboard" passHref legacyBehavior>
+                  <SidebarMenuButton tooltip="Admin Dashboard" isActive={pathname.startsWith('/admin')} asChild>
+                    <a>
+                      <User />
+                      <span>Admin</span>
+                    </a>
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -86,10 +90,12 @@ export function MainSidebar() {
         ) : (
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/login" passHref>
-                <SidebarMenuButton tooltip="Admin Login" isActive={pathname === '/login'}>
-                  <LogIn />
-                  <span>Login</span>
+              <Link href="/login" passHref legacyBehavior>
+                <SidebarMenuButton tooltip="Admin Login" isActive={pathname === '/login'} asChild>
+                  <a>
+                    <LogIn />
+                    <span>Login</span>
+                  </a>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

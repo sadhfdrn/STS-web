@@ -26,14 +26,14 @@ export default function AssignmentsPage({ searchParams }: { searchParams?: { pag
           {assignments.map((assignment: Assignment) => (
             <Card key={assignment.id}>
               <CardHeader>
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div>
                         <CardTitle className="font-headline">{assignment.title}</CardTitle>
                         <CardDescription>
                             Posted {format(new Date(assignment.date), 'MMMM d, yyyy')}
                         </CardDescription>
                     </div>
-                    <Badge variant="secondary">{assignment.subject}</Badge>
+                    <Badge variant="secondary" className="self-start">{assignment.subject}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
@@ -43,25 +43,27 @@ export default function AssignmentsPage({ searchParams }: { searchParams?: { pag
                     <span className="text-muted-foreground"> ({formatDistanceToNow(new Date(assignment.deadline), { addSuffix: true })})</span>
                 </p>
               </CardContent>
-              <CardFooter className="bg-muted/50 p-4 flex items-center justify-between">
-                <div className='flex items-center gap-4'>
+              <CardFooter className="bg-muted/50 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className='flex items-center gap-4 w-full sm:w-auto'>
                     {fileTypeIcons[assignment.file_type]}
-                    <span className='font-medium'>{assignment.filename}</span>
-                    <Button asChild size="sm">
+                    <span className='font-medium truncate'>{assignment.filename}</span>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button asChild size="sm" className="flex-1 sm:flex-none">
                         <a href={assignment.file_url} target="_blank" rel="noopener noreferrer">
                             <Download className="mr-2 h-4 w-4" />
                             Download
                         </a>
                     </Button>
+                    {assignment.answer_file_url && (
+                        <Button asChild size="sm" variant="secondary" className="flex-1 sm:flex-none">
+                            <Link href={`/assignments/${assignment.id}/answer`}>
+                                <BookCheck className="mr-2 h-4 w-4" />
+                                View Answer
+                            </Link>
+                        </Button>
+                    )}
                 </div>
-                {assignment.answer_file_url && (
-                     <Button asChild size="sm" variant="secondary">
-                        <Link href={`/assignments/${assignment.id}/answer`}>
-                            <BookCheck className="mr-2 h-4 w-4" />
-                            View Answer
-                        </Link>
-                    </Button>
-                )}
               </CardFooter>
             </Card>
           ))}
