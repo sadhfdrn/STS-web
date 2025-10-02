@@ -7,25 +7,29 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   return (
-    <div className="w-full max-w-sm relative">
-      <Button asChild variant="ghost" className="absolute -top-16 left-0">
-        <Link href="/">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Link>
-      </Button>
-      <Card>
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <Logo className="w-16 h-16" />
-          </div>
-          <CardTitle className="font-headline text-2xl">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoginForm />
-        </CardContent>
-      </Card>
+    <div className="flex flex-col items-center justify-center w-full min-h-screen">
+       <div className="w-full max-w-sm">
+        <div className="flex justify-start w-full mb-4">
+            <Button asChild variant="ghost">
+                <Link href="/">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Home
+                </Link>
+            </Button>
+        </div>
+        <Card>
+            <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+                <Logo className="w-16 h-16" />
+            </div>
+            <CardTitle className="font-headline text-2xl">Admin Login</CardTitle>
+            <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+            </CardHeader>
+            <CardContent>
+            <LoginForm />
+            </CardContent>
+        </Card>
+       </div>
     </div>
   );
 }

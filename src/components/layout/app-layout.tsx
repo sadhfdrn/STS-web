@@ -13,7 +13,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
       {isLoginPage ? (
-        <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+        <main className="bg-background">
           {children}
         </main>
       ) : (
