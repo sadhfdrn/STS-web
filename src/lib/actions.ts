@@ -5,6 +5,33 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { NOTIFICATIONS, COURSE_MATERIALS, ASSIGNMENTS } from './mock-data';
 import { format } from 'date-fns';
+import fetch from 'node-fetch';
+
+async function uploadToCatbox(file: File) {
+    if (!file || file.size === 0) return null;
+
+    const formData = new FormData();
+    formData.append('reqtype', 'fileupload');
+    formData.append('fileToUpload', file);
+
+    try {
+        const response = await fetch('https://catbox.moe/user/api.php', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            console.error('Catbox API Error:', await response.text());
+            return null;
+        }
+
+        return await response.text();
+    } catch (error) {
+        console.error('Failed to upload file:', error);
+        return null;
+    }
+}
+
 
 // --- Notification Actions ---
 
@@ -51,20 +78,22 @@ export async function addNotification(formData: FormData) {
 
 const materialSchema = z.object({
     subject: z.enum(['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science']),
-    filename: z.string().min(1, "File is required."),
 });
 
 
 export async function addMaterial(formData: FormData) {
     const file = formData.get('file') as File | null;
     const subject = formData.get('subject');
-
+    
     if (!file || file.size === 0) {
         return { success: false, message: 'File is required.' };
     }
-    
-    // Simulate Catbox API upload and getting a URL back
-    const mockFileUrl = `https://files.catbox.moe/mock_${file.name}`;
+
+    const fileUrl = await uploadToCatbox(file);
+
+    if (!fileUrl) {
+        return { success: false, message: 'File upload failed. Please try again.' };
+    }
     
     // Determine file type
     let fileType: 'pdf' | 'image' | 'video' = 'pdf';
@@ -76,7 +105,7 @@ export async function addMaterial(formData: FormData) {
         id: (COURSE_MATERIALS.length + 1).toString(),
         subject: subject as any,
         filename: file.name,
-        file_url: mockFileUrl,
+        file_url: fileUrl,
         file_type: fileType,
         upload_date: new Date().toISOString(),
     };
@@ -123,20 +152,25 @@ export async function addAssignment(formData: FormData) {
 
     const { title, description, subject, deadline, file, answerFile } = validatedFields.data;
 
-    // Simulate file upload
-    const mockFileUrl = `https://files.catbox.moe/mock_assignment_${file.name}`;
+    // Upload assignment file
+    const fileUrl = await uploadToCatbox(file);
+    if (!fileUrl) {
+        return { success: false, message: 'Assignment file upload failed. Please try again.' };
+    }
     const fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
     
+    // Upload answer file if it exists
     let answer_file_url = null;
     let answer_file_type = null;
     let answer_filename = null;
     
     if (answerFile && answerFile.size > 0) {
-        answer_file_url = `https://files.catbox.moe/mock_answer_${answerFile.name}`;
-        answer_file_type = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
-        answer_filename = answerFile.name;
+        answer_file_url = await uploadToCatbox(answerFile);
+        if (answer_file_url) {
+            answer_file_type = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
+            answer_filename = answerFile.name;
+        }
     }
-
 
     const newAssignment = {
         id: (ASSIGNMENTS.length + 1).toString(),
@@ -144,7 +178,7 @@ export async function addAssignment(formData: FormData) {
         description,
         subject,
         deadline: deadline.toISOString(),
-        file_url: mockFileUrl,
+        file_url: fileUrl,
         file_type: fileType,
         filename: file.name,
         date: new Date().toISOString(),
