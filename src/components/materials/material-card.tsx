@@ -25,7 +25,7 @@ export function MaterialCard({ material }: Props) {
       </CardHeader>
       <CardContent className="flex-1 text-sm text-muted-foreground">
         <p><strong>Subject:</strong> {material.subject}</p>
-        <p><strong>Uploaded:</strong> {formatDistanceToNow(material.uploadDate.toDate(), { addSuffix: true })}</p>
+        <p><strong>Uploaded:</strong> {formatDistanceToNow(material.uploadDate, { addSuffix: true })}</p>
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full">

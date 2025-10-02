@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -17,25 +18,15 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { addNotification } from '@/lib/actions';
-import { useFormStatus } from 'react-dom';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters long.'),
   description: z.string().min(10, 'Description must be at least 10 characters long.'),
 });
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending}>
-            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Post Notification
-        </Button>
-    )
-}
-
 export function NotificationForm() {
   const { toast } = useToast();
+  const [isPending, startTransition] = React.useTransition();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,19 +35,25 @@ export function NotificationForm() {
     },
   });
 
-  const action = async (formData: FormData) => {
-    const result = await addNotification(formData);
-    if(result.success) {
-        toast({ title: "Success", description: "Notification posted successfully."});
-        form.reset();
-    } else {
-        toast({ variant: 'destructive', title: "Error", description: result.message });
-    }
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const formData = new FormData();
+    formData.append('title', values.title);
+    formData.append('description', values.description);
+
+    startTransition(async () => {
+      const result = await addNotification(formData);
+      if(result.success) {
+          toast({ title: "Success", description: "Notification posted successfully."});
+          form.reset();
+      } else {
+          toast({ variant: 'destructive', title: "Error", description: result.message });
+      }
+    });
   }
 
   return (
     <Form {...form}>
-      <form action={action} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="title"
@@ -83,7 +80,10 @@ export function NotificationForm() {
             </FormItem>
           )}
         />
-        <SubmitButton />
+        <Button type="submit" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Post Notification
+        </Button>
       </form>
     </Form>
   );

@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarIcon, Loader2, Upload } from 'lucide-react';
 import { addAssignment } from '@/lib/actions';
-import { useFormStatus } from 'react-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Subject } from '@/lib/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -28,29 +27,22 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 const subjects: Subject[] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
+const subjectEnum: [Subject, ...Subject[]] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters long.'),
   description: z.string().min(10, 'Description must be at least 10 characters long.'),
-  subject: z.enum(subjects),
+  subject: z.enum(subjectEnum),
   deadline: z.date(),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
   answerFile: z.instanceof(File).optional(),
 });
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending}>
-            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-            Create Assignment
-        </Button>
-    )
-}
 
 export function AssignmentForm() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const [isPending, startTransition] = React.useTransition();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,20 +54,38 @@ export function AssignmentForm() {
     },
   });
 
-  const action = async (formData: FormData) => {
-    const result = await addAssignment(formData);
-    if(result.success) {
-        toast({ title: "Success", description: "Assignment created successfully."});
-        form.reset();
-        formRef.current?.reset();
-    } else {
-        toast({ variant: 'destructive', title: "Error", description: result.message });
-    }
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      if (value) {
+        if (value instanceof Date) {
+          formData.append(key, value.toISOString());
+        } else {
+          formData.append(key, value);
+        }
+      }
+    });
+    
+    startTransition(async () => {
+      const result = await addAssignment(formData);
+      if(result.success) {
+          toast({ title: "Success", description: "Assignment created successfully."});
+          form.reset();
+          if (formRef.current) {
+            formRef.current.reset();
+            // Manually clear file inputs if needed, though reset should handle it
+            const fileInputs = formRef.current.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => (input as HTMLInputElement).value = '');
+          }
+      } else {
+          toast({ variant: 'destructive', title: "Error", description: result.message });
+      }
+    });
   }
 
   return (
     <Form {...form}>
-      <form ref={formRef} action={action} className="space-y-4">
+      <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
          <FormField
           control={form.control}
           name="title"
@@ -164,15 +174,16 @@ export function AssignmentForm() {
         <FormField
           control={form.control}
           name="file"
-          render={({ field }) => (
+          render={({ field: { onChange, ...fieldProps } }) => (
             <FormItem>
               <FormLabel>Assignment File</FormLabel>
               <FormControl>
                 <Input 
+                    {...fieldProps}
                     name="file"
                     type="file" 
                     accept="application/pdf,image/jpeg,image/png"
-                    onChange={(e) => field.onChange(e.target.files?.[0])}
+                    onChange={(e) => onChange(e.target.files?.[0])}
                 />
               </FormControl>
               <FormMessage />
@@ -182,15 +193,16 @@ export function AssignmentForm() {
         <FormField
           control={form.control}
           name="answerFile"
-          render={({ field }) => (
+          render={({ field: { onChange, ...fieldProps } }) => (
             <FormItem>
               <FormLabel>Answer File (Optional)</FormLabel>
               <FormControl>
                 <Input 
+                    {...fieldProps}
                     name="answerFile"
                     type="file" 
                     accept="application/pdf,image/jpeg,image/png"
-                    onChange={(e) => field.onChange(e.target.files?.[0])}
+                    onChange={(e) => onChange(e.target.files?.[0])}
                 />
               </FormControl>
               <FormDescription>
@@ -200,7 +212,10 @@ export function AssignmentForm() {
             </FormItem>
           )}
         />
-        <SubmitButton />
+        <Button type="submit" disabled={isPending}>
+            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+            Create Assignment
+        </Button>
       </form>
     </Form>
   );

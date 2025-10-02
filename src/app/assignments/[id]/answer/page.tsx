@@ -2,15 +2,21 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileWarning } from 'lucide-react';
-import { useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import type { Assignment } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { assignments } from '@/lib/mock-data';
+import { useEffect, useState } from 'react';
 
 export default function AssignmentAnswerPage({ params }: { params: { id: string } }) {
-  const firestore = useFirestore();
-  const assignmentRef = firestore ? doc(firestore, 'assignments', params.id) : null;
-  const { data: assignment, isLoading } = useDoc<Assignment>(assignmentRef, true);
+  const [assignment, setAssignment] = useState<Assignment | undefined>();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const found = assignments.find(a => a.id === params.id);
+    setAssignment(found);
+    setIsLoading(false);
+  }, [params.id]);
+
 
   if (isLoading) {
       return <p>Loading answer...</p>
@@ -45,8 +51,6 @@ export default function AssignmentAnswerPage({ params }: { params: { id: string 
         </CardHeader>
         <CardContent>
           {assignment.answerFileType === 'image' ? (
-            // In a real app, you would use next/image. For mock data, a simple img is fine.
-            // eslint-disable-next-line @next/next/no-img-element
             <img 
               src={assignment.answerFileUrl} 
               alt={`Answer for ${assignment.title}`} 

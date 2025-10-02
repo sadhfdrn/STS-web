@@ -1,12 +1,11 @@
-// @ts-nocheck
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import fetch from 'node-fetch';
-import { getFirestore, collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { notifications, assignments, courseMaterials, addData } from './mock-data';
+import type { Notification, Assignment, CourseMaterial, Subject } from './types';
 
 async function uploadToCatbox(file: File) {
     if (!file || file.size === 0) return null;
@@ -56,23 +55,16 @@ export async function addNotification(formData: FormData) {
   
   const { title, description } = validatedFields.data;
   
-  const { firestore } = initializeFirebase();
-  const notificationsCollection = collection(firestore, 'notifications');
+  const newNotification: Notification = {
+      id: `notif-${Date.now()}`,
+      title,
+      description,
+      date: new Date(),
+      submitted: false,
+  };
 
-  try {
-    await addDoc(notificationsCollection, {
-        title,
-        description,
-        date: serverTimestamp(),
-        submitted: false,
-    });
-  } catch (error) {
-      console.error("Error adding notification:", error);
-      return { success: false, message: 'Failed to add notification.'};
-  }
+  addData('notifications', newNotification);
 
-
-  // Revalidate paths to show new data
   revalidatePath('/admin/dashboard/notifications');
   revalidatePath('/notifications');
   revalidatePath('/');
@@ -82,9 +74,10 @@ export async function addNotification(formData: FormData) {
 
 
 // --- Material Actions ---
+const subjectEnum: [Subject, ...Subject[]] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
 
 const materialSchema = z.object({
-    subject: z.enum(['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science']),
+    subject: z.enum(subjectEnum),
 });
 
 
@@ -102,27 +95,20 @@ export async function addMaterial(formData: FormData) {
         return { success: false, message: 'File upload failed. Please try again.' };
     }
     
-    // Determine file type
     let fileType: 'pdf' | 'image' | 'video' = 'pdf';
     if(file.type.startsWith('image/')) fileType = 'image';
     if(file.type.startsWith('video/')) fileType = 'video';
     
-    const { firestore } = initializeFirebase();
-    const materialsCollection = collection(firestore, 'course_materials');
+    const newMaterial: CourseMaterial = {
+        id: `mat-${Date.now()}`,
+        subject: subject as Subject,
+        filename: file.name,
+        fileUrl: fileUrl,
+        fileType: fileType,
+        uploadDate: new Date(),
+    };
 
-    try {
-        await addDoc(materialsCollection, {
-            subject: subject as any,
-            filename: file.name,
-            fileUrl: fileUrl,
-            fileType: fileType,
-            uploadDate: serverTimestamp(),
-        });
-    } catch(e) {
-        console.error("Error adding material: ", e);
-        return { success: false, message: "Failed to upload material."};
-    }
-
+    addData('courseMaterials', newMaterial);
 
     revalidatePath('/admin/dashboard/materials');
     revalidatePath('/materials');
@@ -136,7 +122,7 @@ export async function addMaterial(formData: FormData) {
 const assignmentSchema = z.object({
     title: z.string().min(5),
     description: z.string().min(10),
-    subject: z.enum(['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science']),
+    subject: z.enum(subjectEnum),
     deadline: z.date(),
     file: z.instanceof(File).refine(file => file.size > 0, "File is required.").refine(file => ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type), "Only PDF and image files are allowed."),
     answerFile: z.instanceof(File).optional(),
@@ -163,16 +149,13 @@ export async function addAssignment(formData: FormData) {
     }
 
     const { title, description, subject, deadline, file, answerFile } = validatedFields.data;
-    const { firestore } = initializeFirebase();
 
-    // Upload assignment file
     const fileUrl = await uploadToCatbox(file);
     if (!fileUrl) {
         return { success: false, message: 'Assignment file upload failed. Please try again.' };
     }
     const fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
     
-    // Upload answer file if it exists
     let answerFileUrl = null;
     let answerFileType = null;
     let answerFilename = null;
@@ -184,39 +167,35 @@ export async function addAssignment(formData: FormData) {
             answerFilename = answerFile.name;
         }
     }
+    const notificationId = `notif-${Date.now()}`;
+    const newNotification: Notification = {
+        id: notificationId,
+        title: `New Assignment: ${title}`,
+        description: `${description}. Deadline: ${format(deadline, 'PP')}. View details in the Assignments section.`,
+        date: new Date(),
+        submitted: false
+    };
 
-    const assignmentsCollection = collection(firestore, 'assignments');
-    const notificationsCollection = collection(firestore, 'notifications');
+    addData('notifications', newNotification);
 
-    try {
-        const notificationDocRef = await addDoc(notificationsCollection, {
-            title: `New Assignment: ${title}`,
-            description: `${description}. Deadline: ${format(deadline, 'PP')}. View details in the Assignments section.`,
-            date: serverTimestamp(),
-            submitted: false
-        });
+    const newAssignment: Assignment = {
+        id: `asg-${Date.now()}`,
+        title,
+        description,
+        subject,
+        deadline,
+        fileUrl: fileUrl,
+        fileType: fileType,
+        filename: file.name,
+        date: new Date(),
+        answerFileUrl,
+        answerFileType,
+        answerFilename,
+        submitted: false,
+        notificationId: notificationId
+    };
 
-        await addDoc(assignmentsCollection, {
-            title,
-            description,
-            subject,
-            deadline,
-            fileUrl: fileUrl,
-            fileType: fileType,
-            filename: file.name,
-            date: serverTimestamp(),
-            answerFileUrl,
-            answerFileType,
-            answerFilename,
-            submitted: false,
-            notificationId: notificationDocRef.id
-        });
-
-    } catch (e) {
-        console.error("Error creating assignment and notification:", e);
-        return { success: false, message: 'Failed to create assignment.'};
-    }
-
+    addData('assignments', newAssignment);
 
     revalidatePath('/admin/dashboard/assignments');
     revalidatePath('/assignments');
@@ -228,23 +207,20 @@ export async function addAssignment(formData: FormData) {
 }
 
 export async function markAssignmentAsSubmitted(assignmentId: string, notificationId: string) {
-    const { firestore } = initializeFirebase();
-    const assignmentRef = doc(firestore, 'assignments', assignmentId);
-    const notificationRef = doc(firestore, 'notifications', notificationId);
-    const submissionDate = serverTimestamp();
+    const assignment = assignments.find(a => a.id === assignmentId);
+    const notification = notifications.find(n => n.id === notificationId);
 
-    try {
-        await updateDoc(assignmentRef, {
-            submitted: true,
-            submissionDate: submissionDate
-        });
-        await updateDoc(notificationRef, {
-            submitted: true,
-            submissionDate: submissionDate
-        });
-    } catch(e) {
-        console.error("Error marking as submitted:", e);
-        return { success: false, message: 'Failed to mark as submitted.' };
+    if (assignment) {
+        assignment.submitted = true;
+        assignment.submissionDate = new Date();
+    }
+    if(notification) {
+        notification.submitted = true;
+        notification.submissionDate = new Date();
+    }
+
+    if (!assignment) {
+      return { success: false, message: 'Assignment not found.' };
     }
 
     revalidatePath('/assignments');

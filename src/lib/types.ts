@@ -1,4 +1,3 @@
-import { Timestamp } from "firebase/firestore";
 
 export type Subject = 'Statistics' | 'Physics' | 'English' | 'Mathematics' | 'Computer Science';
 export type FileType = 'pdf' | 'image' | 'video';
@@ -7,9 +6,9 @@ export interface Notification {
   id: string;
   title: string;
   description: string;
-  date: Timestamp;
+  date: Date;
   submitted?: boolean;
-  submissionDate?: Timestamp;
+  submissionDate?: Date;
 }
 
 export interface CourseMaterial {
@@ -18,7 +17,7 @@ export interface CourseMaterial {
   filename: string;
   fileUrl: string;
   fileType: FileType;
-  uploadDate: Timestamp;
+  uploadDate: Date;
 }
 
 export interface Assignment {
@@ -26,15 +25,15 @@ export interface Assignment {
   title: string;
   description: string;
   subject: Subject;
-  deadline: Timestamp;
+  deadline: Date;
   fileUrl: string;
   fileType: 'pdf' | 'image';
   filename: string;
-  date: Timestamp;
+  date: Date;
   answerFileUrl?: string | null;
   answerFileType?: 'pdf' | 'image' | null;
   answerFilename?: string | null;
   submitted?: boolean;
-  submissionDate?: Timestamp;
+  submissionDate?: Date;
   notificationId?: string;
 }

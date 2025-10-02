@@ -1,49 +1,35 @@
-'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { notifications as allNotifications } from '@/lib/mock-data';
 import type { Notification } from '@/lib/types';
-import { useCollection, useFirestore, useMemoFirebase, useSession } from '@/firebase';
-import { collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { subHours } from 'date-fns';
 
-export default function Home() {
-  const firestore = useFirestore();
-  const session = useSession();
+async function getNotifications() {
+  // Simulate async data fetching
+  return allNotifications;
+}
+
+
+export default async function Home() {
+  const notifications = await getNotifications();
 
   const twentyFourHoursAgo = subHours(new Date(), 24);
-  const twentyFourHoursAgoTimestamp = Timestamp.fromDate(twentyFourHoursAgo);
 
-  const notificationsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
-      collection(firestore, 'notifications'),
-      where('submitted', '==', false),
-      orderBy('date', 'desc'),
-      limit(3)
-    );
-  }, [firestore]);
-  
-  const submittedNotificationsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
-      collection(firestore, 'notifications'),
-      where('submitted', '==', true),
-      where('submissionDate', '>=', twentyFourHoursAgoTimestamp),
-      orderBy('submissionDate', 'desc')
-    );
-  }, [firestore, twentyFourHoursAgoTimestamp]);
-
-  // Pass `true` for public access
-  const { data: latestNotifications, isLoading: isLoadingLatest } = useCollection<Notification>(notificationsQuery, true);
-  const { data: recentSubmitted, isLoading: isLoadingSubmitted } = useCollection<Notification>(submittedNotificationsQuery, true);
-
-  const combinedNotifications = [...(latestNotifications || []), ...(recentSubmitted || [])]
-    .sort((a, b) => b.date.toMillis() - a.date.toMillis())
+  const combinedNotifications = notifications
+    .filter(n => {
+      // If it's submitted, only show it if it was submitted in the last 24 hours
+      if (n.submitted && n.submissionDate) {
+        return n.submissionDate > twentyFourHoursAgo;
+      }
+      // If not submitted, always show
+      return !n.submitted;
+    })
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 3);
     
-  const isLoading = isLoadingLatest || isLoadingSubmitted;
+  const isLoading = false; // No more loading state needed for mock data
 
 
   return (
@@ -93,7 +79,7 @@ export default function Home() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    {format(notification.date.toDate(), 'MMMM d, yyyy')}
+                    {format(notification.date, 'MMMM d, yyyy')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
