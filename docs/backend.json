@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification to be displayed to users.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the notification entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the notification."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the notification."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date when the notification was created or posted.",
+          "format": "date-time"
+        },
+        "optionalField1": {
+          "type": "string",
+          "description": "Optional field for additional notification information. Can be left blank."
+        },
+        "optionalField2": {
+          "type": "string",
+          "description": "Optional field for additional notification information. Can be left blank."
+        },
+        "submitted": {
+          "type": "boolean",
+          "description": "Boolean that denotes whether the notification represents assignment submission."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "The date the assignment was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "date"
+      ]
+    },
+    "CourseMaterial": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CourseMaterial",
+      "type": "object",
+      "description": "Represents a course material file uploaded to the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the course material entity."
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject category of the course material (e.g., Statistics, Physics)."
+        },
+        "filename": {
+          "type": "string",
+          "description": "Original filename of the uploaded file."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL where the file is stored (e.g., Catbox URL).",
+          "format": "uri"
+        },
+        "fileType": {
+          "type": "string",
+          "description": "MIME type of the uploaded file (e.g., application/pdf, image/jpeg)."
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Date when the file was uploaded.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "subject",
+        "filename",
+        "fileUrl",
+        "fileType",
+        "uploadDate"
+      ]
+    },
+    "Admin": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Admin",
+      "type": "object",
+      "description": "Represents an administrator user account.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the admin user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the administrator.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": {
+            "$ref": "#/backend/entities/Notification"
+          },
+          "description": "Stores notifications. Admins can create, update and delete notifications. Includes the 'submitted' boolean and 'submissionDate' fields for marking assignment submission status.  The path uses document-level security, where admins have write access.",
+          "params": [
+            {
+              "name": "notificationId",
+              "description": "The unique identifier for the notification."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/course_materials/{courseMaterialId}",
+        "definition": {
+          "entityName": "CourseMaterial",
+          "schema": {
+            "$ref": "#/backend/entities/CourseMaterial"
+          },
+          "description": "Stores course materials uploaded by admins. The path uses document-level security, where admins have write access.",
+          "params": [
+            {
+              "name": "courseMaterialId",
+              "description": "The unique identifier for the course material."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{uid}",
+        "definition": {
+          "entityName": "Admin",
+          "schema": {
+            "$ref": "#/backend/entities/Admin"
+          },
+          "description": "Collection to store admin user IDs. Existence of a document at this path grants admin privileges. This enables role-based access control without needing custom claims.",
+          "params": [
+            {
+              "name": "uid",
+              "description": "The Firebase Auth UID of the administrator."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to prioritize authorization independence, clarity, and scalability. It leverages denormalization to avoid `get()` calls in security rules, ensuring atomic operations and simplifying debugging. Structural segregation is used to maintain a homogeneous security posture within collections. Access modeling standardizes authorization patterns using path-based ownership for user-specific data and a dedicated collection for admin roles. \n\nSpecifically, the structure addresses the prompt requirements as follows:\n\n*   **Admin Authentication & Assignment Submission:** The `/roles_admin/{uid}` collection facilitates secure admin role management using existence checks. The `notifications` document includes a `submitted` boolean and `submissionDate` field, which allows admin users to mark assignment submissions as completed. Rules can be implemented to control who can modify these fields.\n*   **Notification Management:** Notifications are stored in a top-level `/notifications` collection. Admin status, determined by membership in the `/roles_admin/{uid}` collection, is required to create or modify notifications. The `submitted` and `submissionDate` fields on the notification allow marking assignment submissions as complete and triggering the potential for deletion after 24 hours (handled via a Cloud Function triggered by Firestore).\n*   **Course Material Upload & Display:** Course materials are stored in the `/course_materials` collection. Admin role is required for upload. Course material data includes all necessary metadata (filename, subject, fileUrl, fileType, uploadDate) for display and filtering.\n\n**Authorization Independence (Denormalization):**\n\n*   Admin status is managed via the `/roles_admin/{uid}` collection. The existence of a document at this path indicates admin privileges. This eliminates the need to `get()` user roles from other collections when writing security rules for modifying course materials or notifications.\n\n**QAPs (Rules are not Filters):**\n\n*   The segregation of admin roles into a dedicated `/roles_admin/{uid}` collection ensures that listing operations on course materials and notifications do not require filtering based on user roles within the rules.  Instead, the application logic handles filtering based on the authenticated user's role, which is determined separately. All documents in a collection (`/course_materials` or `/notifications`) share the same security posture, simplifying rules and improving performance."
+  }
+}
