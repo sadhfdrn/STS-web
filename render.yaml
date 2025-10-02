@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: statssite
+    env: node
+    plan: free
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_1
+        fromSecret: true # Set this secret in your Render dashboard
+      # You can add more admins here by creating secrets in Render
+      # and adding them to this list.
+      # - key: ADMIN_2
+      #   fromSecret: true
