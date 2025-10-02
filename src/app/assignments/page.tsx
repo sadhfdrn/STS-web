@@ -53,7 +53,7 @@ export default function AssignmentsPage({ searchParams }: { searchParams?: { pag
     return q;
   }, [firestore, currentPage, lastVisible]);
   
-  const { data: assignments, isLoading } = useCollection<Assignment>(assignmentsQuery);
+  const { data: assignments, isLoading } = useCollection<Assignment>(assignmentsQuery, true);
 
   useEffect(() => {
     if(firestore) {

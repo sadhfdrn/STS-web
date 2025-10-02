@@ -5,11 +5,12 @@ import { FileWarning } from 'lucide-react';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Assignment } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 
 export default function AssignmentAnswerPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
   const assignmentRef = firestore ? doc(firestore, 'assignments', params.id) : null;
-  const { data: assignment, isLoading } = useDoc<Assignment>(assignmentRef);
+  const { data: assignment, isLoading } = useDoc<Assignment>(assignmentRef, true);
 
   if (isLoading) {
       return <p>Loading answer...</p>

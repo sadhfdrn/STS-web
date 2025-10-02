@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useSession } from '@/firebase';
 
 /** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
@@ -36,18 +37,28 @@ export interface UseDocResult<T> {
  * @template T Optional type for document data. Defaults to any.
  * @param {DocumentReference<DocumentData> | null | undefined} docRef -
  * The Firestore DocumentReference. Waits if null/undefined.
+ * @param {boolean} isPublic - Optional flag to allow public access. If false or undefined, it requires a session.
  * @returns {UseDocResult<T>} Object with data, isLoading, error.
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
+  isPublic: boolean = false,
 ): UseDocResult<T> {
   type StateDataType = WithId<T> | null;
 
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const session = useSession();
 
   useEffect(() => {
+    // If it's not a public route and there's no session, don't fetch data.
+    if(!isPublic && !session) {
+      setData(null);
+      setIsLoading(true); // Keep loading state to prevent showing empty state
+      return;
+    }
+    
     if (!memoizedDocRef) {
       setData(null);
       setIsLoading(false);
@@ -87,7 +98,7 @@ export function useDoc<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
+  }, [memoizedDocRef, session, isPublic]); // Re-run if the memoizedDocRef or session changes.
 
   return { data, isLoading, error };
 }

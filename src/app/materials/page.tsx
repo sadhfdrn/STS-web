@@ -53,7 +53,7 @@ export default function MaterialsPage({ searchParams }: {
     return q;
   }, [firestore, currentPage, lastVisible, searchParams?.subject, searchParams?.fileType]);
 
-  const { data: materials, isLoading } = useCollection<CourseMaterial>(materialsQuery);
+  const { data: materials, isLoading } = useCollection<CourseMaterial>(materialsQuery, true);
 
   const filteredMaterials = useMemoFirebase(() => {
     if(!materials) return [];
@@ -68,7 +68,7 @@ export default function MaterialsPage({ searchParams }: {
     if(firestore) {
         const constraints = [];
         if(searchParams?.subject && searchParams.subject !== 'All') {
-            constraints.push(where('subject', '==', searchParams.subject));
+            constraints.push(where('subject', '==', search-Params.subject));
         }
         if(searchParams?.fileType && searchParams.fileType !== 'All') {
             constraints.push(where('fileType', '==', searchParams.fileType));

@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import type { Notification } from '@/lib/types';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useSession } from '@/firebase';
 import { collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { subHours } from 'date-fns';
 
 export default function Home() {
   const firestore = useFirestore();
+  const session = useSession();
 
   const twentyFourHoursAgo = subHours(new Date(), 24);
   const twentyFourHoursAgoTimestamp = Timestamp.fromDate(twentyFourHoursAgo);
@@ -34,8 +35,9 @@ export default function Home() {
     );
   }, [firestore, twentyFourHoursAgoTimestamp]);
 
-  const { data: latestNotifications, isLoading: isLoadingLatest } = useCollection<Notification>(notificationsQuery);
-  const { data: recentSubmitted, isLoading: isLoadingSubmitted } = useCollection<Notification>(submittedNotificationsQuery);
+  // Pass `true` for public access
+  const { data: latestNotifications, isLoading: isLoadingLatest } = useCollection<Notification>(notificationsQuery, true);
+  const { data: recentSubmitted, isLoading: isLoadingSubmitted } = useCollection<Notification>(submittedNotificationsQuery, true);
 
   const combinedNotifications = [...(latestNotifications || []), ...(recentSubmitted || [])]
     .sort((a, b) => b.date.toMillis() - a.date.toMillis())

@@ -37,7 +37,7 @@ export default function NotificationsPage({ searchParams }: { searchParams?: { p
     return q;
   }, [firestore, currentPage, lastVisible]);
   
-  const { data: notifications, isLoading } = useCollection<Notification>(notificationsQuery);
+  const { data: notifications, isLoading } = useCollection<Notification>(notificationsQuery, true);
 
   useEffect(() => {
     if(firestore) {
