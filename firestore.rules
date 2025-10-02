@@ -1,88 +1,53 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a role-based access control model, with admins defined by presence in the /roles_admin collection. It secures notifications and course materials by restricting write access to admins only.
- *
- * @dataStructure
- * - /notifications/{notificationId}: Stores notification data. Only admins can create, update, or delete notifications.
- * - /course_materials/{courseMaterialId}: Stores course materials. Only admins can create, update, or delete course materials.
- * - /roles_admin/{uid}:  Presence of a document with a UID indicates admin status for that user.
- *
- * @keySecurityDecisions
- * - Only admins can create, update, or delete notifications and course materials.
- * - Admin status is determined by the existence of a document in the `/roles_admin/{uid}` collection.
- * - Read access (get, list) is public for both notifications and course materials, allowing any user to view them.
- * - Listing of admin roles is denied to prevent unauthorized discovery of administrators.
- *
- * @denormalizationForAuthorization
- * - Admin status is denormalized into the `/roles_admin/{uid}` collection. The presence of a document at `/roles_admin/{uid}` indicates that the user with the UID `uid` is an admin. This avoids needing to query user roles from other collections or documents.
- *
- * @structuralSegregation
- * - Admin roles are structurally segregated into the `/roles_admin/{uid}` collection. This simplifies the rules for `/notifications` and `/course_materials` as they only need to check for admin status via the existence of a document in the `/roles_admin/{uid}` collection.
+ * @description This ruleset provides public read access to notifications, course materials, and assignments,
+ * allowing any user to view these resources. Write access (create, update, delete) is disabled to protect
+ * data integrity, as these collections are intended to be managed by authorized personnel only.
+ * @data_structure
+ * - /notifications/{notificationId}
+ * - /course_materials/{courseMaterialId}
+ * - /assignments/{assignmentId}
+ * @key_security_decisions
+ * - Public read access for all collections.
+ * - Write access is disabled on all collections to prevent unauthorized modifications.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the current user is signed in.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the user with the given UID is an admin.
-     */
-    function isAdmin(uid) {
-      return exists(/databases/$(database)/documents/roles_admin/$(uid));
-    }
-
-    /**
-     * @description Rules for the /notifications collection.
+     * @description Allows anyone to read notifications. Write operations are disabled.
      * @path /notifications/{notificationId}
-     * @allow (get, list): Any user can read a notification.
-     * @allow (create, update, delete): Only admins can create, update or delete notifications.
-     * @deny (create, update, delete): Non-admins cannot create, update or delete notifications.
-     * @principle Enforces admin-only write access to notifications.
+     * @allow (get, list) Anyone can read notifications.
+     * @deny (create, update, delete) No one can create, update, or delete notifications through client-side rules.
+     * @principle Provides public read access to notifications, while preventing unauthorized data modification.
      */
     match /notifications/{notificationId} {
       allow get, list: if true;
-      allow create: if isSignedIn() && isAdmin(request.auth.uid);
-      allow update: if isSignedIn() && isAdmin(request.auth.uid) && resource != null;
-      allow delete: if isSignedIn() && isAdmin(request.auth.uid) && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Rules for the /course_materials collection.
+     * @description Allows anyone to read course materials. Write operations are disabled.
      * @path /course_materials/{courseMaterialId}
-     * @allow (get, list): Any user can read course materials.
-     * @allow (create, update, delete): Only admins can create, update or delete course materials.
-     * @deny (create, update, delete): Non-admins cannot create, update or delete course materials.
-     * @principle Enforces admin-only write access to course materials.
+     * @allow (get, list) Anyone can read course materials.
+     * @deny (create, update, delete) No one can create, update, or delete course materials through client-side rules.
+     * @principle Provides public read access to course materials, while preventing unauthorized data modification.
      */
     match /course_materials/{courseMaterialId} {
       allow get, list: if true;
-      allow create: if isSignedIn() && isAdmin(request.auth.uid);
-      allow update: if isSignedIn() && isAdmin(request.auth.uid) && resource != null;
-      allow delete: if isSignedIn() && isAdmin(request.auth.uid) && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Rules for the /roles_admin collection.
-     * @path /roles_admin/{uid}
-     * @allow create: if request.auth.uid == uid && isSignedIn();
-     * @allow get: if isSignedIn() && isAdmin(request.auth.uid);
-     * @deny list: Listing admin roles is not allowed.
-     * @allow update: if false;
-     * @allow delete: if request.auth.uid == uid && isSignedIn();
-     * @principle Restricts creation and deletion of admin roles to the user themselves, and restricts listing to prevent unauthorized discovery.
+     * @description Allows anyone to read assignments. Write operations are disabled.
+     * @path /assignments/{assignmentId}
+     * @allow (get, list) Anyone can read assignments.
+     * @deny (create, update, delete) No one can create, update, or delete assignments through client-side rules.
+     * @principle Provides public read access to assignments, while preventing unauthorized data modification.
      */
-    match /roles_admin/{uid} {
-      allow get: if isSignedIn() && isAdmin(request.auth.uid);
-      allow list: if false;
-      allow create: if request.auth.uid == uid && isSignedIn();
-      allow update: if false;
-      allow delete: if request.auth.uid == uid && isSignedIn();
+    match /assignments/{assignmentId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
   }
 }
