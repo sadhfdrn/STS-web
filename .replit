@@ -1,9 +1,10 @@
 run = "npm run dev"
 entrypoint = "src/app/page.tsx"
 hidden = ["**/.config", "**/node_modules"]
+modules = ["nodejs-20", "postgresql-16"]
 
 [packager]
-language = "typescript"
+language = "nodejs"
 
   [packager.features]
   nodeVersion = "18"
@@ -11,3 +12,10 @@ language = "typescript"
   packageManager = "npm"
   guessImports = true
   enabledForHosting = false
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[nix]
+channel = "stable-25_05"
