@@ -1,5 +1,5 @@
-import { subDays, subHours } from 'date-fns';
-import type { Notification, CourseMaterial, Subject, FileType } from './types';
+import { subDays, subHours, addDays } from 'date-fns';
+import type { Notification, CourseMaterial, Subject, FileType, Assignment } from './types';
 
 const now = new Date();
 
@@ -10,6 +10,11 @@ export const NOTIFICATIONS: Notification[] = [
   { id: '4', title: 'Office Hours Canceled for Today', description: 'Professor Carter\'s office hours are canceled for today, April 15th. Please email for urgent inquiries.', date: subDays(now, 5).toISOString() },
   { id: '5', title: 'New Practice Problems Uploaded', description: 'A new set of practice problems covering chapters 4 and 5 is now available in the materials section.', date: subDays(now, 7).toISOString() },
   { id: '6', title: 'Welcome to the New Semester!', description: 'Welcome back, students! We look forward to a productive and engaging semester. Please review the updated syllabus.', date: subDays(now, 10).toISOString() },
+];
+
+export const ASSIGNMENTS: Assignment[] = [
+    { id: '1', title: 'Assignment 1: Probability Theory', description: 'Complete the exercises from Chapter 2.', subject: 'Statistics', deadline: addDays(now, 7).toISOString(), file_url: '#', file_type: 'pdf', filename: 'assignment-1.pdf', date: subDays(now, 2).toISOString() },
+    { id: '2', title: 'Essay: The Great Gatsby', description: 'Write a 1500-word essay on the themes of The Great Gatsby.', subject: 'English', deadline: addDays(now, 14).toISOString(), file_url: '#', file_type: 'pdf', filename: 'gatsby-essay-prompt.pdf', date: subDays(now, 4).toISOString() }
 ];
 
 export const COURSE_MATERIALS: CourseMaterial[] = [
@@ -31,6 +36,16 @@ export function getNotifications({ page = 1, limit = 5 }: { page: number; limit:
     data: paginatedData,
     totalPages: Math.ceil(NOTIFICATIONS.length / limit),
   };
+}
+
+export function getAssignments({ page = 1, limit = 5 }: { page: number; limit: number }) {
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const paginatedData = ASSIGNMENTS.slice(start, end);
+    return {
+      data: paginatedData,
+      totalPages: Math.ceil(ASSIGNMENTS.length / limit),
+    };
 }
 
 export function getMaterials({ page = 1, limit = 6, subject, fileType, query }: { page: number; limit: number; subject?: Subject | 'All'; fileType?: FileType | 'All'; query?: string }) {

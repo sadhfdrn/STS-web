@@ -12,11 +12,13 @@ export function Header() {
         if (pathname === '/') return 'Home';
         if (pathname.startsWith('/notifications')) return 'Notifications';
         if (pathname.startsWith('/materials')) return 'Course Materials';
+        if (pathname.startsWith('/assignments')) return 'Assignments';
         if (pathname.startsWith('/admin')) {
              const pathParts = pathname.split('/');
              const lastPart = pathParts.filter(p => p).pop() || 'dashboard';
              if(lastPart === 'dashboard' || lastPart === 'admin') return 'Admin Dashboard';
-             return `Admin / ${lastPart.charAt(0).toUpperCase() + lastPart.slice(1)}`;
+             const title = lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
+             return `Admin / ${title}`;
         }
         return 'StatsSite';
     };

@@ -16,3 +16,15 @@ export interface CourseMaterial {
   file_type: FileType;
   upload_date: string; // ISO string
 }
+
+export interface Assignment {
+  id: string;
+  title: string;
+  description: string;
+  subject: Subject;
+  deadline: string; // ISO string
+  file_url: string;
+  file_type: 'pdf' | 'image';
+  filename: string;
+  date: string; // ISO string
+}

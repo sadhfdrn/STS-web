@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   useSidebar
 } from '@/components/ui/sidebar';
-import { Home, Bell, Book, LogIn, User, Power } from 'lucide-react';
+import { Home, Bell, Book, LogIn, User, Power, FilePenLine } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/icons/logo';
@@ -22,6 +22,7 @@ import { useEffect } from 'react';
 const menuItems = [
   { href: '/', label: 'Home', icon: Home, tooltip: 'Home' },
   { href: '/notifications', label: 'Notifications', icon: Bell, tooltip: 'Notifications' },
+  { href: '/assignments', label: 'Assignments', icon: FilePenLine, tooltip: 'Assignments' },
   { href: '/materials', label: 'Course Materials', icon: Book, tooltip: 'Course Materials' },
 ];
 

@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 const ADMIN_CREDENTIALS = {
   "admin1@example.com": "password_admin1",
   "admin2@example.com": "password_admin2",
+  "test@example.com": "samuel",
 };
 
 export type Session = {

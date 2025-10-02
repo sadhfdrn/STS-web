@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Bell, BookOpen } from "lucide-react";
+import { Bell, BookOpen, FilePenLine } from "lucide-react";
 
 export default function AdminDashboardPage() {
   return (
@@ -11,7 +11,7 @@ export default function AdminDashboardPage() {
         <p className="text-muted-foreground mt-1">Manage site content and settings.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2">
@@ -24,6 +24,22 @@ export default function AdminDashboardPage() {
           <CardContent>
             <Button asChild>
               <Link href="/admin/dashboard/notifications">Go to Notifications</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center gap-2">
+              <FilePenLine className="h-5 w-5" /> Manage Assignments
+            </CardTitle>
+            <CardDescription>
+              Create new assignments and post them as notifications.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/admin/dashboard/assignments">Go to Assignments</Link>
             </Button>
           </CardContent>
         </Card>
