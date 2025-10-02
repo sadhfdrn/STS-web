@@ -2,63 +2,76 @@
  * @fileoverview Firestore Security Rules for Prototyping.
  *
  * Core Philosophy:
- * This ruleset is in prototyping mode. It prioritizes strong authorization
- * while relaxing data validation to accelerate development.  The rules
- * enforce access controls based on ownership where applicable, but do NOT
- * validate the specific data shapes.
+ * This ruleset is in prototyping mode. It prioritizes strict authorization over
+ * data validation, focusing on preventing unauthorized access. Data schema
+ * validation is relaxed to allow for rapid iteration.
  *
  * Data Structure:
- * The Firestore database contains three top-level collections: `notifications`,
- * `course_materials`, and `assignments`.  All collections are treated as publicly
- * readable, but write access is restricted to prevent unauthorized modifications.
+ * The Firestore database consists of three top-level collections:
+ * - /notifications/{notificationId}: Stores notification data.
+ * - /course_materials/{courseMaterialId}: Stores course material files.
+ * - /assignments/{assignmentId}: Stores assignment data.
  *
  * Key Security Decisions:
- * - Public Read Access: `notifications`, `course_materials`, and `assignments`
- *   are publicly readable.  This is suitable for prototyping but should be
- *   reviewed before production.
- * - No User Listing: Listing all users is disallowed.
+ * - All data access requires authentication. Unauthenticated users cannot
+ *   read or write any data.
+ * - List access to /notifications is allowed for any authenticated user.
+ *   Other collections are not listable by default.
+ * - No data validation is performed beyond checking basic ownership for write
+ *   operations. Data types and required fields are not enforced.
+ *
+ * Note: This ruleset is for prototyping and should be updated with more
+ * restrictive rules and comprehensive data validation before production use.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows public read access to notifications, but restricts write access.
+     * @description Allows any authenticated user to read notifications, but restricts write access.
      * @path /notifications/{notificationId}
-     * @allow get, list: Any unauthenticated user can read.
-     * @allow create, update, delete: No one can write.
-     * @deny create, update, delete: Always.
-     * @principle Public read, no writes allowed.
+     * @allow (get, list): Any authenticated user can read notifications.
+     * @allow (create, update, delete): No one can create, update, or delete notifications via the client.
+     * @deny (create, update, delete): Anyone. Notifications are not meant to be edited directly.
+     * @principle Public read, restricted writes.
      */
     match /notifications/{notificationId} {
-      allow get, list: if true;
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows public read access to course materials, but restricts write access.
+     * @description Restricts access to course materials.
      * @path /course_materials/{courseMaterialId}
-     * @allow get, list: Any unauthenticated user can read.
-     * @allow create, update, delete: No one can write.
-     * @deny create, update, delete: Always.
-     * @principle Public read, no writes allowed.
+     * @allow (get): Any authenticated user can read the course material.
+     * @deny (list): Listing course materials is not allowed.
+     * @deny (create, update, delete): No one can create, update, or delete course materials via the client.
+     * @principle Prevents listing and enforces that no client can create/update/delete course materials.
      */
     match /course_materials/{courseMaterialId} {
-      allow get, list: if true;
+      allow get: if isSignedIn();
+      allow list: if false;
       allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows public read access to assignments, but restricts write access.
+     * @description Restricts access to assignments.
      * @path /assignments/{assignmentId}
-     * @allow get, list: Any unauthenticated user can read.
-     * @allow create, update, delete: No one can write.
-     * @deny create, update, delete: Always.
-     * @principle Public read, no writes allowed.
+     * @allow (get): Any authenticated user can read assignment.
+     * @deny (list): Listing assignments is not allowed.
+     * @deny (create, update, delete): No one can create, update, or delete assignments via the client.
+     * @principle Prevents listing and enforces that no client can create/update/delete assignments.
      */
     match /assignments/{assignmentId} {
-      allow get, list: if true;
+      allow get: if isSignedIn();
+      allow list: if false;
       allow create, update, delete: if false;
+    }
+
+    // --- Helper functions ---
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
