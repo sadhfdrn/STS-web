@@ -1,0 +1,51 @@
+# render.yaml
+# Configuration for deploying the Next.js application to Render.
+# This file tells Render how to build and run your project.
+
+services:
+  - type: web
+    name: statssite
+    env: node
+    plan: free # Or your preferred plan
+    region: oregon # Or your preferred region
+    
+    buildFilter:
+      paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
+      - 'next.config.ts'
+      - 'tsconfig.json'
+
+    buildCommand: |
+      npm install
+      npm run db:setup
+      npm run build
+      
+    startCommand: "npm start"
+    
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: neondb # This should match the name of your Render PostgreSQL database service
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true # Let Render generate a secure secret
+      - key: ADMIN_1
+        sync: false # Set this in the Render dashboard
+      - key: ADMIN_2
+        sync: false # Set this in the Render dashboard
+      # Add more ADMIN users here if needed by setting them in the dashboard
+      - key: NODE_ENV
+        value: production
+
+# If you are using a separate database service on Render, you can define it here.
+# For NeonDB, you'll set DATABASE_URL as a secret in the dashboard.
+#
+# databases:
+#   - name: neondb
+#     databaseName: neondb
+#     user: neondb_user
+#     plan: free # Or your preferred plan
