@@ -19,6 +19,7 @@ import { Loader2, Upload } from 'lucide-react';
 import { addMaterial, getSubjects } from '@/lib/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Subject } from '@/lib/types';
+import { Progress } from '@/components/ui/progress';
 
 
 const formSchema = z.object({
@@ -32,6 +33,7 @@ export function MaterialUploadForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = React.useTransition();
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [progress, setProgress] = React.useState(0);
 
   useEffect(() => {
     async function fetchSubjects() {
@@ -40,6 +42,19 @@ export function MaterialUploadForm() {
     }
     fetchSubjects();
   }, []);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isPending) {
+        setProgress(10);
+        timer = setInterval(() => {
+            setProgress(prev => (prev < 90 ? prev + 10 : 90));
+        }, 500);
+    } else {
+        setProgress(0);
+    }
+    return () => clearInterval(timer);
+  }, [isPending]);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,6 +74,7 @@ export function MaterialUploadForm() {
     startTransition(async () => {
       const result = await addMaterial(formData);
       if(result.success) {
+          setProgress(100);
           toast({ title: "Success", description: "Material uploaded successfully."});
           form.reset();
           if (fileInputRef.current) {
@@ -66,6 +82,7 @@ export function MaterialUploadForm() {
           }
       } else {
           toast({ variant: 'destructive', title: "Error", description: result.message });
+          setProgress(0);
       }
     });
   }
@@ -127,6 +144,7 @@ export function MaterialUploadForm() {
             </FormItem>
           )}
         />
+        {isPending && <Progress value={progress} className="w-full" />}
         <Button type="submit" disabled={isPending}>
             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
             Upload Material
