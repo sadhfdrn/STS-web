@@ -25,6 +25,15 @@ async function setupDatabase() {
     `);
     console.log('✅ Table "notifications" created or already exists.');
 
+    // Create subjects table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS subjects (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE
+      );
+    `);
+    console.log('✅ Table "subjects" created or already exists.');
+
     // Create course_materials table
     await client.query(`
       CREATE TABLE IF NOT EXISTS course_materials (

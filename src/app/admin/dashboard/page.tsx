@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Bell, BookOpen, FilePenLine } from "lucide-react";
+import { Bell, BookOpen, FilePenLine, FolderKanban } from "lucide-react";
 
 export default function AdminDashboardPage() {
   return (
@@ -56,6 +56,22 @@ export default function AdminDashboardPage() {
           <CardContent>
             <Button asChild>
               <Link href="/admin/dashboard/materials">Go to Materials</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center gap-2">
+              <FolderKanban className="h-5 w-5" /> Manage Subjects
+            </CardTitle>
+            <CardDescription>
+              Add or remove subjects for course materials and assignments.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/admin/dashboard/subjects">Go to Subjects</Link>
             </Button>
           </CardContent>
         </Card>

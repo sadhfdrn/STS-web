@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarIcon, Loader2, Upload } from 'lucide-react';
-import { addAssignment } from '@/lib/actions';
+import { addAssignment, getSubjects } from '@/lib/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Subject } from '@/lib/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,13 +27,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
-const subjects: Subject[] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
-const subjectEnum: [Subject, ...Subject[]] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters long.'),
   description: z.string().min(10, 'Description must be at least 10 characters long.'),
-  subject: z.enum(subjectEnum),
+  subject: z.string().min(1, 'Subject is required.'),
   deadline: z.date(),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
   answerFile: z.instanceof(File).optional(),
@@ -44,13 +42,22 @@ export function AssignmentForm() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = React.useTransition();
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+
+  useEffect(() => {
+    async function fetchSubjects() {
+      const fetchedSubjects = await getSubjects();
+      setSubjects(fetchedSubjects);
+    }
+    fetchSubjects();
+  }, []);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
         title: '',
         description: '',
-        subject: 'Statistics',
+        subject: '',
         deadline: new Date(),
     },
   });
@@ -74,7 +81,6 @@ export function AssignmentForm() {
           form.reset();
           if (formRef.current) {
             formRef.current.reset();
-            // Manually clear file inputs if needed, though reset should handle it
             const fileInputs = formRef.current.querySelectorAll('input[type="file"]');
             fileInputs.forEach(input => (input as HTMLInputElement).value = '');
           }
@@ -119,14 +125,14 @@ export function AssignmentForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Subject</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                         <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {subjects.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               <FormMessage />

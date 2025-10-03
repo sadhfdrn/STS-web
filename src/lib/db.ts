@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import type { Notification, CourseMaterial, Assignment } from './types';
+import type { Notification, CourseMaterial, Assignment, Subject } from './types';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -146,4 +146,18 @@ export async function updateAssignmentSubmission(assignmentId: string, notificat
   );
   
   return assignmentResult.rowCount !== null && assignmentResult.rowCount > 0;
+}
+
+// --- Subjects ---
+export async function getSubjects(): Promise<Subject[]> {
+    const result = await pool.query('SELECT * FROM subjects ORDER BY name ASC');
+    return result.rows;
+}
+
+export async function addSubject(subject: Subject): Promise<void> {
+    await pool.query('INSERT INTO subjects (id, name) VALUES ($1, $2)', [subject.id, subject.name]);
+}
+
+export async function deleteSubject(id: string): Promise<void> {
+    await pool.query('DELETE FROM subjects WHERE id = $1', [id]);
 }

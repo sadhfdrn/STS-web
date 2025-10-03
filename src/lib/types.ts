@@ -1,5 +1,4 @@
 
-export type Subject = 'Statistics' | 'Physics' | 'English' | 'Mathematics' | 'Computer Science';
 export type FileType = 'pdf' | 'image' | 'video';
 
 export interface Notification {
@@ -12,9 +11,14 @@ export interface Notification {
   submissionDate?: Date;
 }
 
+export interface Subject {
+  id: string;
+  name: string;
+}
+
 export interface CourseMaterial {
   id: string;
-  subject: Subject;
+  subject: string;
   filename: string;
   fileUrl: string;
   fileType: FileType;
@@ -25,7 +29,7 @@ export interface Assignment {
   id: string;
   title: string;
   description: string;
-  subject: Subject;
+  subject: string;
   deadline: Date;
   fileUrl: string;
   fileType: 'pdf' | 'image';

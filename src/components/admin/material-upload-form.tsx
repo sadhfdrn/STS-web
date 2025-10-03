@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,16 +16,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload } from 'lucide-react';
-import { addMaterial } from '@/lib/actions';
+import { addMaterial, getSubjects } from '@/lib/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Subject } from '@/lib/types';
 import { useRef } from 'react';
 
-const subjects: Subject[] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
-const subjectEnum: [Subject, ...Subject[]] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
 
 const formSchema = z.object({
-  subject: z.enum(subjectEnum),
+  subject: z.string().min(1, 'Subject is required'),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
 });
 
@@ -33,11 +31,20 @@ export function MaterialUploadForm() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = React.useTransition();
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+
+  useEffect(() => {
+    async function fetchSubjects() {
+      const fetchedSubjects = await getSubjects();
+      setSubjects(fetchedSubjects);
+    }
+    fetchSubjects();
+  }, []);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        subject: 'Statistics'
+        subject: ''
     },
   });
 
@@ -71,14 +78,14 @@ export function MaterialUploadForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Subject</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                         <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {subjects.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               <FormMessage />

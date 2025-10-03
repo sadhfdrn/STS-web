@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import type { Subject, CourseMaterial } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { FileText, Image, Video } from "lucide-react";
-import { getCourseMaterials } from "@/lib/db";
+import { getCourseMaterials, getSubjects } from "@/lib/db";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { deleteMaterial } from "@/lib/actions";
 
@@ -14,19 +14,18 @@ const fileTypeIcons = {
   video: <Video className="h-5 w-5 text-muted-foreground" />,
 };
 
-const subjects: Subject[] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
-
 async function getMaterialsBySubject() {
     const courseMaterials = await getCourseMaterials();
+    const subjects = await getSubjects();
     const materialsBySubject = subjects.reduce((acc, subject) => {
-        acc[subject] = courseMaterials.filter(m => m.subject === subject);
+        acc[subject.name] = courseMaterials.filter(m => m.subject === subject.name);
         return acc;
-    }, {} as Record<Subject, CourseMaterial[]>);
-    return materialsBySubject;
+    }, {} as Record<string, CourseMaterial[]>);
+    return { materialsBySubject, subjects };
 }
 
 export default async function AdminMaterialsPage() {
-    const materialsBySubject = await getMaterialsBySubject();
+    const { materialsBySubject, subjects } = await getMaterialsBySubject();
 
     return (
         <div className="grid gap-8 md:grid-cols-3">
@@ -47,12 +46,12 @@ export default async function AdminMaterialsPage() {
                     <CardContent className="p-4">
                         <Accordion type="single" collapsible className="w-full">
                             {subjects.map(subject => (
-                                <AccordionItem value={subject} key={subject}>
-                                    <AccordionTrigger className="font-headline">{subject} ({materialsBySubject[subject].length || 0})</AccordionTrigger>
+                                <AccordionItem value={subject.name} key={subject.id}>
+                                    <AccordionTrigger className="font-headline">{subject.name} ({materialsBySubject[subject.name]?.length || 0})</AccordionTrigger>
                                     <AccordionContent>
-                                        {materialsBySubject[subject].length > 0 ? (
+                                        {materialsBySubject[subject.name] && materialsBySubject[subject.name].length > 0 ? (
                                             <ul className="divide-y">
-                                                {materialsBySubject[subject].map(m => (
+                                                {materialsBySubject[subject.name].map(m => (
                                                     <li key={m.id} className="p-4 flex items-center space-x-4 group">
                                                         <div>{fileTypeIcons[m.fileType]}</div>
                                                         <div className="flex-1">

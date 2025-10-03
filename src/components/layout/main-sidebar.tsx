@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   useSidebar
 } from '@/components/ui/sidebar';
-import { Home, Bell, Book, LogIn, User, Power, FilePenLine } from 'lucide-react';
+import { Home, Bell, Book, LogIn, User, Power, FilePenLine, FolderKanban } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/icons/logo';
@@ -25,6 +25,14 @@ const menuItems = [
   { href: '/assignments', label: 'Assignments', icon: FilePenLine, tooltip: 'Assignments' },
   { href: '/materials', label: 'Course Materials', icon: Book, tooltip: 'Course Materials' },
 ];
+
+const adminMenuItems = [
+    { href: '/admin/dashboard', label: 'Dashboard', icon: User, tooltip: 'Admin Dashboard' },
+    { href: '/admin/dashboard/notifications', label: 'Notifications', icon: Bell, tooltip: 'Manage Notifications' },
+    { href: '/admin/dashboard/assignments', label: 'Assignments', icon: FilePenLine, tooltip: 'Manage Assignments' },
+    { href: '/admin/dashboard/materials', label: 'Materials', icon: Book, tooltip: 'Manage Materials' },
+    { href: '/admin/dashboard/subjects', label: 'Subjects', icon: FolderKanban, tooltip: 'Manage Subjects' },
+]
 
 export function MainSidebar() {
   const pathname = usePathname();
@@ -62,24 +70,29 @@ export function MainSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+        {session && (
+            <SidebarMenu>
+                <p className="text-xs text-muted-foreground px-2 pt-4 pb-2 group-data-[collapsible=icon]:hidden">Admin</p>
+                {adminMenuItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                            asChild
+                            isActive={pathname === item.href}
+                            tooltip={item.tooltip}
+                        >
+                            <Link href={item.href}>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        )}
       </SidebarContent>
       <SidebarFooter>
         {session ? (
           <>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild
-                  tooltip="Admin Dashboard" 
-                  isActive={pathname.startsWith('/admin')}
-                >
-                  <Link href="/admin/dashboard">
-                    <User />
-                    <span>Admin</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
             <form action={logout} className="p-2">
                 <Button variant="ghost" size="icon" className="w-full justify-center group-data-[collapsible=icon]:!w-8 group-data-[collapsible=icon]:!h-8">
                     <Power className="h-4 w-4" />

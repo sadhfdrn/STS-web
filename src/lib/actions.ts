@@ -11,7 +11,10 @@ import {
     updateAssignmentSubmission,
     deleteNotification as dbDeleteNotification,
     deleteAssignment as dbDeleteAssignment,
-    deleteCourseMaterial as dbDeleteMaterial
+    deleteCourseMaterial as dbDeleteMaterial,
+    getSubjects as dbGetSubjects,
+    addSubject as dbAddSubject,
+    deleteSubject as dbDeleteSubject
 } from './db';
 import type { Notification, Assignment, CourseMaterial, Subject } from './types';
 
@@ -93,7 +96,6 @@ export async function deleteNotification(id: string) {
 
 
 // --- Material Actions ---
-const subjectEnum: [Subject, ...Subject[]] = ['Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
 
 export async function addMaterial(formData: FormData) {
     const file = formData.get('file') as File | null;
@@ -101,6 +103,9 @@ export async function addMaterial(formData: FormData) {
     
     if (!file || file.size === 0) {
         return { success: false, message: 'File is required.' };
+    }
+    if (!subject) {
+        return { success: false, message: 'Subject is required.' };
     }
 
     const fileUrl = await uploadToCatbox(file);
@@ -115,7 +120,7 @@ export async function addMaterial(formData: FormData) {
     
     const newMaterial: CourseMaterial = {
         id: `mat-${Date.now()}`,
-        subject: subject as Subject,
+        subject: subject as string,
         filename: file.name,
         fileUrl: fileUrl,
         fileType: fileType,
@@ -143,7 +148,7 @@ export async function deleteMaterial(id: string) {
 const assignmentSchema = z.object({
     title: z.string().min(5),
     description: z.string().min(10),
-    subject: z.enum(subjectEnum),
+    subject: z.string().min(1, 'Subject is required'),
     deadline: z.date(),
     file: z.instanceof(File).refine(file => file.size > 0, "File is required.").refine(file => ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type), "Only PDF and image files are allowed."),
     answerFile: z.instanceof(File).optional(),
@@ -272,4 +277,38 @@ export async function getAllAssignments() {
 export async function getAssignmentById(id: string) {
     const { getAssignmentById } = await import('./db');
     return await getAssignmentById(id);
+}
+
+// --- Subject Actions ---
+export async function getSubjects() {
+    return await dbGetSubjects();
+}
+
+export async function addSubject(name: string) {
+    const existingSubject = await pool.query('SELECT * FROM subjects WHERE name = $1', [name]);
+    if (existingSubject.rows.length > 0) {
+        return { success: false, message: 'Subject already exists.' };
+    }
+    
+    await dbAddSubject({ id: name.toLowerCase().replace(/\s+/g, '-'), name });
+    revalidatePath('/admin/dashboard/subjects');
+    revalidatePath('/admin/dashboard/materials');
+    revalidatePath('/admin/dashboard/assignments');
+    return { success: true, message: 'Subject added.' };
+}
+
+export async function deleteSubject(id: string) {
+    // Optional: Check if subject is in use before deleting
+    const materials = await pool.query('SELECT 1 FROM course_materials WHERE subject = (SELECT name FROM subjects WHERE id = $1)', [id]);
+    const assignments = await pool.query('SELECT 1 FROM assignments WHERE subject = (SELECT name FROM subjects WHERE id = $1)', [id]);
+
+    if (materials.rows.length > 0 || assignments.rows.length > 0) {
+        return { success: false, message: 'Cannot delete subject as it is currently in use by materials or assignments.' };
+    }
+
+    await dbDeleteSubject(id);
+    revalidatePath('/admin/dashboard/subjects');
+    revalidatePath('/admin/dashboard/materials');
+    revalidatePath('/admin/dashboard/assignments');
+    return { success: true, message: 'Subject deleted.' };
 }

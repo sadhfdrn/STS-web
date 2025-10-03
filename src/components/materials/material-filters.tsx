@@ -5,14 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDebouncedCallback } from 'use-debounce';
 import type { Subject, FileType } from '@/lib/types';
+import { useState, useEffect } from 'react';
+import { getSubjects } from '@/lib/actions';
 
-const subjects: (Subject | 'All')[] = ['All', 'Statistics', 'Physics', 'English', 'Mathematics', 'Computer Science'];
 const fileTypes: (FileType | 'All')[] = ['All', 'pdf', 'image', 'video'];
 
 export function MaterialFilters() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+  const [subjects, setSubjects] = useState<(Subject | {id: 'All', name: 'All'})[]>([]);
+
+  useEffect(() => {
+    async function fetchSubjects() {
+      const fetchedSubjects = await getSubjects();
+      setSubjects([{id: 'All', name: 'All'}, ...fetchedSubjects]);
+    }
+    fetchSubjects();
+  }, []);
 
   const handleFilterChange = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -47,7 +57,7 @@ export function MaterialFilters() {
         </SelectTrigger>
         <SelectContent>
           {subjects.map((s) => (
-            <SelectItem key={s} value={s}>{s}</SelectItem>
+            <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
           ))}
         </SelectContent>
       </Select>
