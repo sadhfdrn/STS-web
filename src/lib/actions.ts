@@ -15,7 +15,9 @@ import {
     getSubjects as dbGetSubjects,
     addSubject as dbAddSubject,
     deleteSubject as dbDeleteSubject,
-    pool
+    pool,
+    getCourseMaterialById as dbGetCourseMaterialById,
+    getAssignmentById as dbGetAssignmentById
 } from './db';
 import type { Notification, Assignment, CourseMaterial, Subject } from './types';
 
@@ -98,16 +100,29 @@ export async function deleteNotification(id: string) {
 
 // --- Material Actions ---
 
+const materialSchema = z.object({
+    title: z.string().min(3, 'Title is required.'),
+    subject: z.string().min(1, 'Subject is required.'),
+    file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
+});
+
 export async function addMaterial(formData: FormData) {
-    const file = formData.get('file') as File | null;
-    const subject = formData.get('subject');
+    const rawFormData = {
+        title: formData.get('title'),
+        subject: formData.get('subject'),
+        file: formData.get('file'),
+    };
+
+    const validatedFields = materialSchema.safeParse(rawFormData);
     
-    if (!file || file.size === 0) {
-        return { success: false, message: 'File is required.' };
+    if (!validatedFields.success) {
+        return {
+          success: false,
+          message: 'Invalid data. Title, subject and file are required.',
+        };
     }
-    if (!subject) {
-        return { success: false, message: 'Subject is required.' };
-    }
+
+    const { title, subject, file } = validatedFields.data;
 
     const fileUrl = await uploadToCatbox(file);
 
@@ -121,6 +136,7 @@ export async function addMaterial(formData: FormData) {
     
     const newMaterial: CourseMaterial = {
         id: `mat-${Date.now()}`,
+        title,
         subject: subject as string,
         filename: file.name,
         fileUrl: fileUrl,
@@ -270,14 +286,17 @@ export async function getAllCourseMaterials() {
     return await getCourseMaterials();
 }
 
+export async function getCourseMaterialById(id: string) {
+    return await dbGetCourseMaterialById(id);
+}
+
 export async function getAllAssignments() {
     const { getAssignments } = await import('./db');
     return await getAssignments();
 }
 
 export async function getAssignmentById(id: string) {
-    const { getAssignmentById } = await import('./db');
-    return await getAssignmentById(id);
+    return await dbGetAssignmentById(id);
 }
 
 // --- Subject Actions ---

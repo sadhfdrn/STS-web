@@ -40,7 +40,8 @@ const formSchema = z.object({
 
 export function AssignmentForm() {
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const answerFileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = React.useTransition();
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
@@ -59,6 +60,8 @@ export function AssignmentForm() {
         description: '',
         subject: '',
         deadline: new Date(),
+        file: undefined,
+        answerFile: undefined,
     },
   });
 
@@ -79,11 +82,8 @@ export function AssignmentForm() {
       if(result.success) {
           toast({ title: "Success", description: "Assignment created successfully."});
           form.reset();
-          if (formRef.current) {
-            formRef.current.reset();
-            const fileInputs = formRef.current.querySelectorAll('input[type="file"]');
-            fileInputs.forEach(input => (input as HTMLInputElement).value = '');
-          }
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          if (answerFileInputRef.current) answerFileInputRef.current.value = "";
       } else {
           toast({ variant: 'destructive', title: "Error", description: result.message });
       }
@@ -92,7 +92,7 @@ export function AssignmentForm() {
 
   return (
     <Form {...form}>
-      <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
          <FormField
           control={form.control}
           name="title"
@@ -181,16 +181,16 @@ export function AssignmentForm() {
         <FormField
           control={form.control}
           name="file"
-          render={({ field: { onChange, ...fieldProps } }) => (
+          render={({ field: { onChange, value, ...rest } }) => (
             <FormItem>
               <FormLabel>Assignment File</FormLabel>
               <FormControl>
                 <Input 
-                    {...fieldProps}
-                    name="file"
                     type="file" 
                     accept="application/pdf,image/jpeg,image/png"
+                    ref={fileInputRef}
                     onChange={(e) => onChange(e.target.files?.[0])}
+                    {...rest}
                 />
               </FormControl>
               <FormMessage />
@@ -200,16 +200,16 @@ export function AssignmentForm() {
         <FormField
           control={form.control}
           name="answerFile"
-          render={({ field: { onChange, ...fieldProps } }) => (
+          render={({ field: { onChange, value, ...rest } }) => (
             <FormItem>
               <FormLabel>Answer File (Optional)</FormLabel>
               <FormControl>
                 <Input 
-                    {...fieldProps}
-                    name="answerFile"
                     type="file" 
                     accept="application/pdf,image/jpeg,image/png"
+                    ref={answerFileInputRef}
                     onChange={(e) => onChange(e.target.files?.[0])}
+                    {...rest}
                 />
               </FormControl>
               <FormDescription>

@@ -55,15 +55,15 @@ export default async function AdminMaterialsPage() {
                                                     <li key={m.id} className="p-4 flex items-center space-x-4 group">
                                                         <div>{fileTypeIcons[m.fileType]}</div>
                                                         <div className="flex-1">
-                                                            <h3 className="font-semibold">{m.filename}</h3>
+                                                            <h3 className="font-semibold">{m.title}</h3>
                                                             <p className="text-sm text-muted-foreground">
-                                                                Uploaded {formatDistanceToNow(m.uploadDate, { addSuffix: true })}
+                                                                {m.filename} - Uploaded {formatDistanceToNow(m.uploadDate, { addSuffix: true })}
                                                             </p>
                                                         </div>
                                                         <DeleteButton
                                                             id={m.id}
                                                             deleteAction={deleteMaterial}
-                                                            itemName={m.filename}
+                                                            itemName={m.title}
                                                             itemType="Material"
                                                         />
                                                     </li>

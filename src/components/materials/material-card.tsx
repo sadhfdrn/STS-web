@@ -20,7 +20,7 @@ export function MaterialCard({ material }: Props) {
       <CardHeader className="flex-row items-start gap-4 space-y-0 pb-2">
         {fileTypeIcons[material.fileType]}
         <div className="flex-1">
-          <CardTitle className="font-headline text-base leading-tight line-clamp-2">{material.filename}</CardTitle>
+          <CardTitle className="font-headline text-base leading-tight line-clamp-2">{material.title}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="flex-1 text-sm text-muted-foreground">
@@ -29,7 +29,7 @@ export function MaterialCard({ material }: Props) {
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full">
-          <a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
+          <a href={`/api/download/${material.id}`} download>
             <Download className="mr-2 h-4 w-4" />
             Download
           </a>

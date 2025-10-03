@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,17 +19,17 @@ import { Loader2, Upload } from 'lucide-react';
 import { addMaterial, getSubjects } from '@/lib/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Subject } from '@/lib/types';
-import { useRef } from 'react';
 
 
 const formSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters.'),
   subject: z.string().min(1, 'Subject is required'),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
 });
 
 export function MaterialUploadForm() {
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = React.useTransition();
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
@@ -44,12 +44,15 @@ export function MaterialUploadForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        subject: ''
+        title: '',
+        subject: '',
+        file: undefined,
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const formData = new FormData();
+    formData.append('title', values.title);
     formData.append('subject', values.subject);
     formData.append('file', values.file);
 
@@ -58,10 +61,8 @@ export function MaterialUploadForm() {
       if(result.success) {
           toast({ title: "Success", description: "Material uploaded successfully."});
           form.reset();
-          if (formRef.current) {
-            formRef.current.reset();
-            const fileInput = formRef.current.querySelector('input[type="file"]');
-            if (fileInput) (fileInput as HTMLInputElement).value = '';
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
           }
       } else {
           toast({ variant: 'destructive', title: "Error", description: result.message });
@@ -71,7 +72,20 @@ export function MaterialUploadForm() {
 
   return (
     <Form {...form}>
-      <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Material Title</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Lecture 1: Intro to Stats" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="subject"
@@ -95,14 +109,18 @@ export function MaterialUploadForm() {
         <FormField
           control={form.control}
           name="file"
-          render={({ field: { onChange, ...fieldProps } }) => (
+          render={({ field: { onChange, value, ...rest } }) => (
             <FormItem>
               <FormLabel>File</FormLabel>
               <FormControl>
                 <Input 
-                    {...fieldProps}
-                    type="file" 
-                    onChange={(e) => onChange(e.target.files?.[0])}
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        onChange(file);
+                    }}
+                    {...rest}
                 />
               </FormControl>
               <FormMessage />

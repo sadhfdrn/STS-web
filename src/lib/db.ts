@@ -40,6 +40,7 @@ export async function getCourseMaterials(): Promise<CourseMaterial[]> {
   );
   return result.rows.map(row => ({
     id: row.id,
+    title: row.title,
     subject: row.subject,
     filename: row.filename,
     fileUrl: row.file_url,
@@ -48,10 +49,25 @@ export async function getCourseMaterials(): Promise<CourseMaterial[]> {
   }));
 }
 
+export async function getCourseMaterialById(id: string): Promise<CourseMaterial | undefined> {
+    const result = await pool.query('SELECT * FROM course_materials WHERE id = $1', [id]);
+    if (result.rows.length === 0) return undefined;
+    const row = result.rows[0];
+    return {
+        id: row.id,
+        title: row.title,
+        subject: row.subject,
+        filename: row.filename,
+        fileUrl: row.file_url,
+        fileType: row.file_type as FileType,
+        uploadDate: new Date(row.upload_date),
+    };
+}
+
 export async function addCourseMaterial(material: CourseMaterial): Promise<void> {
   await pool.query(
-    'INSERT INTO course_materials (id, subject, filename, file_url, file_type, upload_date) VALUES ($1, $2, $3, $4, $5, $6)',
-    [material.id, material.subject, material.filename, material.fileUrl, material.fileType, material.uploadDate]
+    'INSERT INTO course_materials (id, title, subject, filename, file_url, file_type, upload_date) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+    [material.id, material.title, material.subject, material.filename, material.fileUrl, material.fileType, material.uploadDate]
   );
 }
 

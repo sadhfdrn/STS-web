@@ -18,6 +18,7 @@ export interface Subject {
 
 export interface CourseMaterial {
   id: string;
+  title: string;
   subject: string;
   filename: string;
   fileUrl: string;
