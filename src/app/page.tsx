@@ -16,10 +16,10 @@ export default async function Home() {
     .filter(n => {
       // If it's submitted, only show it if it was submitted in the last 24 hours
       if (n.submitted && n.submissionDate) {
-        return n.submissionDate > twentyFourHoursAgo;
+        return n.submissionDate.getTime() > twentyFourHoursAgo.getTime();
       }
       // If not submitted, always show
-      return !n.submitted;
+      return true;
     })
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 3);

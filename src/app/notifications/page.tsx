@@ -54,6 +54,11 @@ export default function NotificationsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">{notification.description}</p>
+                {notification.eventDate && (
+                  <p className="text-xs text-primary font-medium mt-2">
+                      Event on: {format(notification.eventDate, 'PPpp')}
+                  </p>
+                )}
               </CardContent>
             </Card>
           ))}
