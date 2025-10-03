@@ -14,7 +14,8 @@ import {
     deleteCourseMaterial as dbDeleteMaterial,
     getSubjects as dbGetSubjects,
     addSubject as dbAddSubject,
-    deleteSubject as dbDeleteSubject
+    deleteSubject as dbDeleteSubject,
+    pool
 } from './db';
 import type { Notification, Assignment, CourseMaterial, Subject } from './types';
 
@@ -298,9 +299,14 @@ export async function addSubject(name: string) {
 }
 
 export async function deleteSubject(id: string) {
-    // Optional: Check if subject is in use before deleting
-    const materials = await pool.query('SELECT 1 FROM course_materials WHERE subject = (SELECT name FROM subjects WHERE id = $1)', [id]);
-    const assignments = await pool.query('SELECT 1 FROM assignments WHERE subject = (SELECT name FROM subjects WHERE id = $1)', [id]);
+    const subjectNameResult = await pool.query('SELECT name FROM subjects WHERE id = $1', [id]);
+    if (subjectNameResult.rows.length === 0) {
+        return { success: false, message: 'Subject not found.' };
+    }
+    const subjectName = subjectNameResult.rows[0].name;
+
+    const materials = await pool.query('SELECT 1 FROM course_materials WHERE subject = $1', [subjectName]);
+    const assignments = await pool.query('SELECT 1 FROM assignments WHERE subject = $1', [subjectName]);
 
     if (materials.rows.length > 0 || assignments.rows.length > 0) {
         return { success: false, message: 'Cannot delete subject as it is currently in use by materials or assignments.' };
