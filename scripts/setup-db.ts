@@ -38,6 +38,7 @@ async function setupDatabase() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS course_materials (
         id VARCHAR(255) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
         subject VARCHAR(255) NOT NULL,
         filename VARCHAR(255) NOT NULL,
         file_url TEXT NOT NULL,
