@@ -18,12 +18,24 @@ async function setupDatabase() {
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         date TIMESTAMPTZ NOT NULL,
-        event_date TIMESTAMPTZ,
         submitted BOOLEAN DEFAULT FALSE,
         submission_date TIMESTAMPTZ
       );
     `);
-    console.log('✅ Table "notifications" created or already exists.');
+    
+    // Add event_date column if it doesn't exist
+    await client.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'notifications' AND column_name = 'event_date'
+        ) THEN
+          ALTER TABLE notifications ADD COLUMN event_date TIMESTAMPTZ;
+        END IF;
+      END $$;
+    `);
+    console.log('✅ Table "notifications" created/updated successfully.');
 
     // Create subjects table
     await client.query(`
@@ -38,7 +50,6 @@ async function setupDatabase() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS course_materials (
         id VARCHAR(255) PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
         subject VARCHAR(255) NOT NULL,
         filename VARCHAR(255) NOT NULL,
         file_url TEXT NOT NULL,
@@ -46,7 +57,20 @@ async function setupDatabase() {
         upload_date TIMESTAMPTZ NOT NULL
       );
     `);
-    console.log('✅ Table "course_materials" created or already exists.');
+    
+    // Add title column if it doesn't exist
+    await client.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'course_materials' AND column_name = 'title'
+        ) THEN
+          ALTER TABLE course_materials ADD COLUMN title VARCHAR(255) NOT NULL DEFAULT '';
+        END IF;
+      END $$;
+    `);
+    console.log('✅ Table "course_materials" created/updated successfully.');
 
     // Create assignments table
     await client.query(`

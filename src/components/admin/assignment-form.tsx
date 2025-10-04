@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Progress } from '@/components/ui/progress';
 
 
 const formSchema = z.object({
@@ -44,6 +45,7 @@ export function AssignmentForm() {
   const answerFileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = React.useTransition();
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     async function fetchSubjects() {
@@ -78,14 +80,30 @@ export function AssignmentForm() {
     });
     
     startTransition(async () => {
+      setUploadProgress(0);
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
       const result = await addAssignment(formData);
+      clearInterval(interval);
+      setUploadProgress(100);
+      
       if(result.success) {
           toast({ title: "Success", description: "Assignment created successfully."});
           form.reset();
           if (fileInputRef.current) fileInputRef.current.value = "";
           if (answerFileInputRef.current) answerFileInputRef.current.value = "";
+          setTimeout(() => setUploadProgress(0), 1000);
       } else {
           toast({ variant: 'destructive', title: "Error", description: result.message });
+          setUploadProgress(0);
       }
     });
   }
@@ -219,6 +237,15 @@ export function AssignmentForm() {
             </FormItem>
           )}
         />
+        {isPending && uploadProgress > 0 && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Uploading...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <Progress value={uploadProgress} className="w-full" />
+          </div>
+        )}
         <Button type="submit" disabled={isPending}>
             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
             Create Assignment
