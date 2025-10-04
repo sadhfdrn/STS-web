@@ -41,7 +41,6 @@ async function setupDatabase() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS course_materials (
         id VARCHAR(255) PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
         subject VARCHAR(255) NOT NULL,
         filename VARCHAR(255) NOT NULL,
         file_url TEXT NOT NULL,
@@ -49,7 +48,20 @@ async function setupDatabase() {
         upload_date TIMESTAMPTZ NOT NULL
       );
     `);
-    console.log('✅ Table "course_materials" created or already exists.');
+    
+    // Add title column if it doesn't exist
+    await client.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'course_materials' AND column_name = 'title'
+        ) THEN
+          ALTER TABLE course_materials ADD COLUMN title VARCHAR(255) NOT NULL DEFAULT '';
+        END IF;
+      END $$;
+    `);
+    console.log('✅ Table "course_materials" created/updated successfully.');
 
     // Create assignments table
     await client.query(`
