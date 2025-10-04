@@ -1,33 +1,33 @@
-import { getCourseMaterialById } from "@/lib/actions";
+import { getAssignmentById } from "@/lib/actions";
 import { NextResponse } from "next/server";
 import fetch from "node-fetch";
 
 export async function GET(
     request: Request,
-    { params }: { params: { materialId: string } }
+    { params }: { params: { assignmentId: string } }
 ) {
-    const materialId = params.materialId;
+    const assignmentId = params.assignmentId;
     
-    if (!materialId) {
-        return new NextResponse("Material ID is required", { status: 400 });
+    if (!assignmentId) {
+        return new NextResponse("Assignment ID is required", { status: 400 });
     }
 
-    const material = await getCourseMaterialById(materialId);
+    const assignment = await getAssignmentById(assignmentId);
 
-    if (!material) {
-        return new NextResponse("Material not found", { status: 404 });
+    if (!assignment) {
+        return new NextResponse("Assignment not found", { status: 404 });
     }
 
     try {
-        const fileResponse = await fetch(material.fileUrl);
+        const fileResponse = await fetch(assignment.fileUrl);
 
         if (!fileResponse.ok) {
-            console.error(`Failed to fetch file from ${material.fileUrl}. Status: ${fileResponse.status}`);
+            console.error(`Failed to fetch file from ${assignment.fileUrl}. Status: ${fileResponse.status}`);
             return new NextResponse("Could not fetch file", { status: 500 });
         }
 
-        const fileExtension = material.filename.split('.').pop() || '';
-        const downloadFilename = fileExtension ? `${material.title}.${fileExtension}` : material.title;
+        const fileExtension = assignment.filename.split('.').pop() || '';
+        const downloadFilename = fileExtension ? `${assignment.title}.${fileExtension}` : assignment.title;
 
         const headers = new Headers();
         headers.set('Content-Type', fileResponse.headers.get('Content-Type') || 'application/octet-stream');

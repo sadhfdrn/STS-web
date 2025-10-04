@@ -54,9 +54,9 @@ export default async function AdminMaterialsPage() {
                                                 {materialsBySubject[subject.name].map(m => (
                                                     <li key={m.id} className="p-4 flex items-center space-x-4 group">
                                                         <div>{fileTypeIcons[m.fileType]}</div>
-                                                        <div className="flex-1">
+                                                        <div className="flex-1 min-w-0">
                                                             <h3 className="font-semibold">{m.title}</h3>
-                                                            <p className="text-sm text-muted-foreground">
+                                                            <p className="text-sm text-muted-foreground break-words">
                                                                 {m.filename} - Uploaded {formatDistanceToNow(m.uploadDate, { addSuffix: true })}
                                                             </p>
                                                         </div>

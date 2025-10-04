@@ -92,11 +92,11 @@ export default function AssignmentsPage() {
               <CardFooter className="bg-muted/50 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 max-w-full">
                   <div className='flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-full overflow-hidden'>
                       <div className="shrink-0">{fileTypeIcons[assignment.fileType]}</div>
-                      <span className='font-medium truncate text-sm sm:text-base break-all'>{assignment.filename}</span>
+                      <span className='font-medium text-sm sm:text-base overflow-hidden break-words'>{assignment.filename}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
                       <Button asChild size="sm" className="w-full sm:w-auto">
-                          <a href={assignment.fileUrl} target="_blank" rel="noopener noreferrer">
+                          <a href={`/api/download-assignment/${assignment.id}`} download>
                               <Download className="mr-2 h-4 w-4" />
                               Download
                           </a>
