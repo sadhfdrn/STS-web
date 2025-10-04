@@ -57,12 +57,12 @@ export default function AssignmentsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full">
       <h1 className="font-headline text-2xl sm:text-3xl font-bold">All Assignments</h1>
       {assignments && assignments.length > 0 ? (
           <div className="space-y-4">
           {assignments.map((assignment: Assignment) => (
-              <Card key={assignment.id} className="overflow-hidden">
+              <Card key={assignment.id} className="overflow-hidden max-w-full">
               <CardHeader className="pb-3 sm:pb-6">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                       <div className="flex-1 min-w-0">
@@ -89,10 +89,10 @@ export default function AssignmentsPage() {
                       )}
                   </div>
               </CardContent>
-              <CardFooter className="bg-muted/50 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className='flex items-center gap-2 sm:gap-4 min-w-0 flex-1'>
+              <CardFooter className="bg-muted/50 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 max-w-full">
+                  <div className='flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-full overflow-hidden'>
                       <div className="shrink-0">{fileTypeIcons[assignment.fileType]}</div>
-                      <span className='font-medium truncate text-sm sm:text-base'>{assignment.filename}</span>
+                      <span className='font-medium truncate text-sm sm:text-base break-all'>{assignment.filename}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
                       <Button asChild size="sm" className="w-full sm:w-auto">
