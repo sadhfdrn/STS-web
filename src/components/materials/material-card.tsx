@@ -16,7 +16,7 @@ const fileTypeIcons = {
 
 export function MaterialCard({ material }: Props) {
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="flex-row items-start gap-4 space-y-0 pb-2">
         {fileTypeIcons[material.fileType]}
         <div className="flex-1">
@@ -28,7 +28,7 @@ export function MaterialCard({ material }: Props) {
         <p><strong>Uploaded:</strong> {formatDistanceToNow(material.uploadDate, { addSuffix: true })}</p>
       </CardContent>
       <CardFooter>
-        <Button asChild className="w-full">
+        <Button asChild className="w-full transition-transform duration-200 active:scale-95">
           <a href={`/api/download/${material.id}`} download>
             <Download className="mr-2 h-4 w-4" />
             Download

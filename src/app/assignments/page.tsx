@@ -12,6 +12,7 @@ import { markAssignmentAsSubmitted, getAllAssignments } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/components/session-provider';
 import { useSearchParams } from 'next/navigation';
+import { AssignmentCardSkeleton } from '@/components/shared/loading-skeletons';
 
 const PAGE_SIZE = 5;
 
@@ -35,9 +36,11 @@ export default function AssignmentsPage() {
   
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadAssignments() {
+      setIsLoading(true);
       const allAssignments = await getAllAssignments();
       const sorted = allAssignments.sort((a,b) => b.date.getTime() - a.date.getTime());
       const pages = Math.ceil(sorted.length / PAGE_SIZE);
@@ -46,6 +49,7 @@ export default function AssignmentsPage() {
       
       setAssignments(sorted.slice(start, end));
       setTotalPages(pages);
+      setIsLoading(false);
     }
     loadAssignments();
   }, [currentPage]);
@@ -58,11 +62,20 @@ export default function AssignmentsPage() {
 
   return (
     <div className="space-y-6 max-w-full">
-      <h1 className="font-headline text-2xl sm:text-3xl font-bold">All Assignments</h1>
-      {assignments && assignments.length > 0 ? (
+      <h1 className="font-headline text-2xl sm:text-3xl font-bold animate-in">
+        All Assignments
+      </h1>
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <AssignmentCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : assignments && assignments.length > 0 ? (
           <div className="space-y-4">
           {assignments.map((assignment: Assignment) => (
-              <Card key={assignment.id} className="overflow-hidden max-w-full">
+              <div key={assignment.id} className="animate-in">
+              <Card className="overflow-hidden max-w-full transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
               <CardHeader className="pb-3 sm:pb-6">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                       <div className="flex-1 min-w-0">
@@ -115,6 +128,7 @@ export default function AssignmentsPage() {
                   </div>
               </CardFooter>
               </Card>
+              </div>
           ))}
           </div>
       ) : (
