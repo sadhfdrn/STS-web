@@ -181,7 +181,7 @@ export function AssignmentForm() {
         <FormField
           control={form.control}
           name="file"
-          render={({ field: { onChange, value, ...rest } }) => (
+          render={({ field: { onChange, value, ref, ...rest } }) => (
             <FormItem>
               <FormLabel>Assignment File</FormLabel>
               <FormControl>
@@ -200,7 +200,7 @@ export function AssignmentForm() {
         <FormField
           control={form.control}
           name="answerFile"
-          render={({ field: { onChange, value, ...rest } }) => (
+          render={({ field: { onChange, value, ref, ...rest } }) => (
             <FormItem>
               <FormLabel>Answer File (Optional)</FormLabel>
               <FormControl>
