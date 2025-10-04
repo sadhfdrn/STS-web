@@ -34,7 +34,7 @@ const formSchema = z.object({
   subject: z.string().min(1, 'Subject is required.'),
   deadline: z.date(),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
-  answerFile: z.instanceof(File).optional(),
+  answerFile: z.instanceof(File).nullish(),
 });
 
 

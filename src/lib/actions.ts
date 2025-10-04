@@ -168,7 +168,7 @@ const assignmentSchema = z.object({
     subject: z.string().min(1, 'Subject is required'),
     deadline: z.date(),
     file: z.instanceof(File).refine(file => file.size > 0, "File is required.").refine(file => ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type), "Only PDF and image files are allowed."),
-    answerFile: z.instanceof(File).optional(),
+    answerFile: z.instanceof(File).nullish(),
 });
 
 export async function addAssignment(formData: FormData) {
