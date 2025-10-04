@@ -15,12 +15,12 @@ export default async function AdminAssignmentsPage() {
     const recentAssignments = await getRecentAssignments();
     
     return (
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-6 md:gap-8 md:grid-cols-3">
             <div className="md:col-span-1">
                 <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline">Create Assignment</CardTitle>
-                        <CardDescription>Post a new assignment for students.</CardDescription>
+                    <CardHeader className="pb-4">
+                        <CardTitle className="font-headline text-xl sm:text-2xl">Create Assignment</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">Post a new assignment for students.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <AssignmentForm />
@@ -28,16 +28,16 @@ export default async function AdminAssignmentsPage() {
                 </Card>
             </div>
             <div className="md:col-span-2">
-                <h2 className="text-2xl font-headline font-semibold mb-4">Recent Assignments</h2>
+                <h2 className="text-xl sm:text-2xl font-headline font-semibold mb-4">Recent Assignments</h2>
                  <Card>
                     <CardContent className="p-0">
                         <ul className="divide-y">
                         {recentAssignments.map(a => (
-                            <li key={a.id} className="p-4 group">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="font-semibold">{a.title}</h3>
-                                        <p className="text-sm text-muted-foreground line-clamp-2">{a.description}</p>
+                            <li key={a.id} className="p-3 sm:p-4 group">
+                                <div className="flex justify-between items-start gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-sm sm:text-base">{a.title}</h3>
+                                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{a.description}</p>
                                     </div>
                                     <DeleteButton
                                         id={a.id}
@@ -46,9 +46,9 @@ export default async function AdminAssignmentsPage() {
                                         itemType="Assignment"
                                     />
                                 </div>
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-1 sm:gap-2">
                                     <span className="text-xs font-medium text-primary">{a.subject}</span>
-                                    <span className="text-xs text-muted-foreground/80">Deadline: {format(a.deadline, 'PP')}</span>
+                                    <span className="text-xs text-muted-foreground/80">Deadline: {format(a.deadline, 'MMM d, yyyy')}</span>
                                 </div>
                             </li>
                         ))}

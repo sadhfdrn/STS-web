@@ -25,7 +25,7 @@ function MarkAsSubmittedButton({ assignmentId, notificationId }: { assignmentId:
             toast({ variant: 'destructive', title: "Error", description: result.message });
         }
     };
-    return <Button onClick={handleClick} size="sm" variant="outline">Mark as Submitted</Button>;
+    return <Button onClick={handleClick} size="sm" variant="outline" className="w-full sm:w-auto">Mark as Submitted</Button>;
 }
 
 export default function AssignmentsPage() {
@@ -58,49 +58,51 @@ export default function AssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-headline text-3xl font-bold">All Assignments</h1>
+      <h1 className="font-headline text-2xl sm:text-3xl font-bold">All Assignments</h1>
       {assignments && assignments.length > 0 ? (
           <div className="space-y-4">
           {assignments.map((assignment: Assignment) => (
-              <Card key={assignment.id}>
-              <CardHeader>
+              <Card key={assignment.id} className="overflow-hidden">
+              <CardHeader className="pb-3 sm:pb-6">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                      <div>
-                          <CardTitle className="font-headline">{assignment.title}</CardTitle>
-                          <CardDescription>
-                              Posted {format(assignment.date, 'MMMM d, yyyy')}
+                      <div className="flex-1 min-w-0">
+                          <CardTitle className="font-headline text-lg sm:text-xl">{assignment.title}</CardTitle>
+                          <CardDescription className="text-xs sm:text-sm">
+                              {format(assignment.date, 'MMM d, yyyy')}
                           </CardDescription>
                       </div>
-                      <Badge variant="secondary" className="self-start">{assignment.subject}</Badge>
+                      <Badge variant="secondary" className="self-start shrink-0 text-xs">{assignment.subject}</Badge>
                   </div>
               </CardHeader>
-              <CardContent>
-                  <p className="text-muted-foreground mb-4">{assignment.description}</p>
-                  <p className="font-semibold text-sm">
-                      Deadline: {format(assignment.deadline, 'PPpp')} 
-                      <span className="text-muted-foreground"> ({formatDistanceToNow(assignment.deadline, { addSuffix: true })})</span>
-                  </p>
-                  {assignment.submitted && assignment.submissionDate && (
-                      <div className="mt-2 flex items-center text-green-600">
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          <span className="text-sm font-medium">Submitted on {format(assignment.submissionDate, 'PP')}</span>
-                      </div>
-                  )}
-              </CardContent>
-              <CardFooter className="bg-muted/50 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className='flex items-center gap-4 w-full sm:w-auto'>
-                      {fileTypeIcons[assignment.fileType]}
-                      <span className='font-medium truncate'>{assignment.filename}</span>
+              <CardContent className="pb-3 sm:pb-6">
+                  <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base">{assignment.description}</p>
+                  <div className="space-y-2">
+                      <p className="font-semibold text-xs sm:text-sm">
+                          <span className="block sm:inline">Deadline: {format(assignment.deadline, 'MMM d, yyyy h:mm a')}</span>
+                          <span className="text-muted-foreground block sm:inline sm:ml-1">({formatDistanceToNow(assignment.deadline, { addSuffix: true })})</span>
+                      </p>
+                      {assignment.submitted && assignment.submissionDate && (
+                          <div className="flex items-center text-green-600">
+                              <CheckCircle className="h-4 w-4 mr-2 shrink-0" />
+                              <span className="text-xs sm:text-sm font-medium">Submitted {format(assignment.submissionDate, 'MMM d, yyyy')}</span>
+                          </div>
+                      )}
                   </div>
-                  <div className="flex gap-2 w-full sm:w-auto">
-                      <Button asChild size="sm" className="flex-1 sm:flex-none">
+              </CardContent>
+              <CardFooter className="bg-muted/50 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className='flex items-center gap-2 sm:gap-4 min-w-0 flex-1'>
+                      <div className="shrink-0">{fileTypeIcons[assignment.fileType]}</div>
+                      <span className='font-medium truncate text-sm sm:text-base'>{assignment.filename}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+                      <Button asChild size="sm" className="w-full sm:w-auto">
                           <a href={assignment.fileUrl} target="_blank" rel="noopener noreferrer">
                               <Download className="mr-2 h-4 w-4" />
                               Download
                           </a>
                       </Button>
                       {assignment.answerFileUrl && (
-                          <Button asChild size="sm" variant="secondary" className="flex-1 sm:flex-none">
+                          <Button asChild size="sm" variant="secondary" className="w-full sm:w-auto">
                               <Link href={`/assignments/${assignment.id}/answer`}>
                                   <BookCheck className="mr-2 h-4 w-4" />
                                   View Answer
