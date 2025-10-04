@@ -8,6 +8,19 @@ The application is built with Next.js 15, uses React Server Components for optim
 
 ## Recent Changes
 
+**October 4, 2025:**
+- **Performance & Animation Improvements**: Enhanced user experience with smooth animations and better perceived performance
+  - Added CSS-based fade-in animations for page elements without hydration issues
+  - Implemented loading skeleton components for assignments, materials, and notifications
+  - Added hover effects with shadow lift and translate animations on cards
+  - Implemented active state scale animations on buttons for tactile feedback
+  - Added global smooth scroll behavior for better navigation experience
+  - Fixed horizontal scroll issues on mobile for long filenames with proper text wrapping
+- **Download Improvements**: Enhanced file download functionality
+  - All downloads now proxy through the server for better control and security
+  - Downloaded files are renamed to use the title instead of original filename (preserves file extension)
+  - Created dedicated download routes for both materials and assignments
+
 **October 2, 2025:**
 - **PostgreSQL Database Migration**: Migrated from in-memory storage to PostgreSQL database
   - Created database tables for notifications, course_materials, and assignments
