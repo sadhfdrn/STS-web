@@ -35,18 +35,23 @@ export async function deleteNotification(id: string): Promise<void> {
 }
 
 export async function getCourseMaterials(): Promise<CourseMaterial[]> {
-  const result = await pool.query(
-    'SELECT * FROM course_materials ORDER BY upload_date DESC'
-  );
-  return result.rows.map(row => ({
-    id: row.id,
-    title: row.title,
-    subject: row.subject,
-    filename: row.filename,
-    fileUrl: row.file_url,
-    fileType: row.file_type,
-    uploadDate: new Date(row.upload_date),
-  }));
+  try {
+    const result = await pool.query(
+      'SELECT * FROM course_materials ORDER BY upload_date DESC'
+    );
+    return result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      subject: row.subject,
+      filename: row.filename,
+      fileUrl: row.file_url,
+      fileType: row.file_type,
+      uploadDate: new Date(row.upload_date),
+    }));
+  } catch (error) {
+    console.error('Error fetching course materials:', error);
+    return [];
+  }
 }
 
 export async function getCourseMaterialById(id: string): Promise<CourseMaterial | undefined> {
@@ -76,26 +81,31 @@ export async function deleteCourseMaterial(id: string): Promise<void> {
 }
 
 export async function getAssignments(): Promise<Assignment[]> {
-  const result = await pool.query(
-    'SELECT * FROM assignments ORDER BY date DESC'
-  );
-  return result.rows.map(row => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    subject: row.subject,
-    deadline: new Date(row.deadline),
-    fileUrl: row.file_url,
-    fileType: row.file_type as 'pdf' | 'image',
-    filename: row.filename,
-    date: new Date(row.date),
-    answerFileUrl: row.answer_file_url || null,
-    answerFileType: (row.answer_file_type as 'pdf' | 'image') || null,
-    answerFilename: row.answer_filename || null,
-    submitted: row.submitted,
-    submissionDate: row.submission_date ? new Date(row.submission_date) : undefined,
-    notificationId: row.notification_id,
-  }));
+  try {
+    const result = await pool.query(
+      'SELECT * FROM assignments ORDER BY date DESC'
+    );
+    return result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      subject: row.subject,
+      deadline: new Date(row.deadline),
+      fileUrl: row.file_url,
+      fileType: row.file_type as 'pdf' | 'image',
+      filename: row.filename,
+      date: new Date(row.date),
+      answerFileUrl: row.answer_file_url || null,
+      answerFileType: (row.answer_file_type as 'pdf' | 'image') || null,
+      answerFilename: row.answer_filename || null,
+      submitted: row.submitted,
+      submissionDate: row.submission_date ? new Date(row.submission_date) : undefined,
+      notificationId: row.notification_id,
+    }));
+  } catch (error) {
+    console.error('Error fetching assignments:', error);
+    return [];
+  }
 }
 
 export async function getAssignmentById(id: string): Promise<Assignment | undefined> {
@@ -166,8 +176,13 @@ export async function updateAssignmentSubmission(assignmentId: string, notificat
 
 // --- Subjects ---
 export async function getSubjects(): Promise<Subject[]> {
-    const result = await pool.query('SELECT * FROM subjects ORDER BY name ASC');
-    return result.rows;
+    try {
+        const result = await pool.query('SELECT * FROM subjects ORDER BY name ASC');
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching subjects:', error);
+        return [];
+    }
 }
 
 export async function addSubject(subject: Subject): Promise<void> {
