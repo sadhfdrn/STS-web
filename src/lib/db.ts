@@ -174,6 +174,20 @@ export async function updateAssignmentSubmission(assignmentId: string, notificat
   return assignmentResult.rowCount !== null && assignmentResult.rowCount > 0;
 }
 
+export async function updateAssignmentAnswer(
+  assignmentId: string,
+  answerFileUrl: string,
+  answerFileType: 'pdf' | 'image',
+  answerFilename: string
+): Promise<boolean> {
+  const result = await pool.query(
+    'UPDATE assignments SET answer_file_url = $1, answer_file_type = $2, answer_filename = $3 WHERE id = $4',
+    [answerFileUrl, answerFileType, answerFilename, assignmentId]
+  );
+  
+  return result.rowCount !== null && result.rowCount > 0;
+}
+
 // --- Subjects ---
 export async function getSubjects(): Promise<Subject[]> {
     try {

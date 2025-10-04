@@ -5,6 +5,7 @@ import type { Assignment } from "@/lib/types";
 import { getAssignments } from "@/lib/db";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { deleteAssignment } from "@/lib/actions";
+import { UploadAnswerButton } from "@/components/admin/upload-answer-button";
 
 async function getRecentAssignments() {
     const assignments = await getAssignments();
@@ -46,9 +47,23 @@ export default async function AdminAssignmentsPage() {
                                         itemType="Assignment"
                                     />
                                 </div>
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-1 sm:gap-2">
-                                    <span className="text-xs font-medium text-primary">{a.subject}</span>
-                                    <span className="text-xs text-muted-foreground/80">Deadline: {format(a.deadline, 'MMM d, yyyy')}</span>
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-medium text-primary">{a.subject}</span>
+                                        {a.answerFileUrl && (
+                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                                                Has Answer
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-xs text-muted-foreground/80">Deadline: {format(a.deadline, 'MMM d, yyyy')}</span>
+                                        <UploadAnswerButton
+                                            assignmentId={a.id}
+                                            assignmentTitle={a.title}
+                                            hasAnswer={!!a.answerFileUrl}
+                                        />
+                                    </div>
                                 </div>
                             </li>
                         ))}

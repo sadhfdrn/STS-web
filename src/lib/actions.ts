@@ -276,6 +276,39 @@ export async function markAssignmentAsSubmitted(assignmentId: string, notificati
     return { success: true, message: 'Assignment marked as submitted.' };
 }
 
+export async function uploadAnswerFile(formData: FormData) {
+    const assignmentId = formData.get('assignmentId') as string;
+    const answerFile = formData.get('answerFile') as File;
+
+    if (!answerFile || answerFile.size === 0) {
+        return { success: false, message: 'No file selected.' };
+    }
+
+    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(answerFile.type)) {
+        return { success: false, message: 'Only PDF and image files are allowed.' };
+    }
+
+    const answerFileUrl = await uploadToCatbox(answerFile);
+    if (!answerFileUrl) {
+        return { success: false, message: 'File upload failed. Please try again.' };
+    }
+
+    const answerFileType = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
+    const answerFilename = answerFile.name;
+
+    const { updateAssignmentAnswer } = await import('./db');
+    const success = await updateAssignmentAnswer(assignmentId, answerFileUrl, answerFileType, answerFilename);
+
+    if (!success) {
+        return { success: false, message: 'Failed to update assignment.' };
+    }
+
+    revalidatePath('/admin/dashboard/assignments');
+    revalidatePath('/assignments');
+
+    return { success: true, message: 'Answer file uploaded successfully.' };
+}
+
 export async function getAllNotifications() {
     const { getNotifications } = await import('./db');
     return await getNotifications();
