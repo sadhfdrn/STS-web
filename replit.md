@@ -8,6 +8,14 @@ The application is built with Next.js 15, uses React Server Components for optim
 
 ## Recent Changes
 
+**October 8, 2025:**
+- **Browser Notifications**: Added native browser notification support
+  - Created `useBrowserNotification` hook for managing browser notification permissions and display
+  - Integrated browser notifications in Assignment creation form
+  - Integrated browser notifications in Notification creation form
+  - Notifications automatically request permission on first use
+  - Shows desktop notifications when assignments or announcements are created
+
 **October 4, 2025:**
 - **Performance & Animation Improvements**: Enhanced user experience with smooth animations and better perceived performance
   - Added CSS-based fade-in animations for page elements without hydration issues
