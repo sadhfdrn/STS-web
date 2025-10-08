@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useBrowserNotification } from '@/hooks/use-browser-notification';
 import { Loader2, Calendar as CalendarIcon, X } from 'lucide-react';
 import { addNotification } from '@/lib/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -31,6 +32,7 @@ const formSchema = z.object({
 
 export function NotificationForm() {
   const { toast } = useToast();
+  const { showNotification } = useBrowserNotification();
   const [isPending, startTransition] = React.useTransition();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,6 +55,11 @@ export function NotificationForm() {
       const result = await addNotification(formData);
       if(result.success) {
           toast({ title: "Success", description: "Notification posted successfully."});
+          showNotification('New Notification Posted', {
+            body: values.title,
+            icon: '/icon-192x192.png',
+            tag: 'notification'
+          });
           form.reset();
       } else {
           toast({ variant: 'destructive', title: "Error", description: result.message });
