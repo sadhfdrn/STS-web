@@ -19,8 +19,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useBrowserNotification } from '@/hooks/use-browser-notification';
+import { usePushNotification } from '@/hooks/use-push-notification';
 import { Calendar as CalendarIcon, Loader2, Upload } from 'lucide-react';
-import { addAssignment, getSubjects } from '@/lib/actions';
+import { addAssignment, getSubjects, saveFcmToken } from '@/lib/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Subject } from '@/lib/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -43,6 +44,7 @@ const formSchema = z.object({
 export function AssignmentForm() {
   const { toast } = useToast();
   const { showNotification } = useBrowserNotification();
+  const { requestPermission } = usePushNotification();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const answerFileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = React.useTransition();
@@ -92,6 +94,11 @@ export function AssignmentForm() {
           return prev + 10;
         });
       }, 200);
+
+      const token = await requestPermission();
+      if (token) {
+        await saveFcmToken(token);
+      }
 
       const result = await addAssignment(formData);
       clearInterval(interval);

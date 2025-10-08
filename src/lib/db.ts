@@ -154,55 +154,47 @@ export async function addAssignment(assignment: Assignment): Promise<void> {
   );
 }
 
-export async function deleteAssignment(id: string): Promise<void> {
-    await pool.query('DELETE FROM assignments WHERE id = $1', [id]);
+export async function updateAssignmentSubmission(id: string): Promise<void> {
+    await pool.query(
+        'UPDATE assignments SET submitted = $1, submission_date = $2 WHERE id = $3',
+        [true, new Date(), id]
+    );
 }
 
-export async function updateAssignmentSubmission(assignmentId: string, notificationId: string): Promise<boolean> {
-  const submissionDate = new Date();
-  
-  const assignmentResult = await pool.query(
-    'UPDATE assignments SET submitted = $1, submission_date = $2 WHERE id = $3',
-    [true, submissionDate, assignmentId]
-  );
-  
-  await pool.query(
-    'UPDATE notifications SET submitted = $1, submission_date = $2 WHERE id = $3',
-    [true, submissionDate, notificationId]
-  );
-  
-  return assignmentResult.rowCount !== null && assignmentResult.rowCount > 0;
+export async function updateNotificationSubmission(id: string): Promise<void> {
+    await pool.query(
+        'UPDATE notifications SET submitted = $1, submission_date = $2 WHERE id = $3',
+        [true, new Date(), id]
+    );
 }
 
-export async function updateAssignmentAnswer(
-  assignmentId: string,
-  answerFileUrl: string,
-  answerFileType: 'pdf' | 'image',
-  answerFilename: string
-): Promise<boolean> {
-  const result = await pool.query(
-    'UPDATE assignments SET answer_file_url = $1, answer_file_type = $2, answer_filename = $3 WHERE id = $4',
-    [answerFileUrl, answerFileType, answerFilename, assignmentId]
-  );
-  
-  return result.rowCount !== null && result.rowCount > 0;
-}
-
-// --- Subjects ---
 export async function getSubjects(): Promise<Subject[]> {
-    try {
-        const result = await pool.query('SELECT * FROM subjects ORDER BY name ASC');
-        return result.rows;
-    } catch (error) {
-        console.error('Error fetching subjects:', error);
-        return [];
-    }
+    const result = await pool.query('SELECT * FROM subjects ORDER BY name');
+    return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+    }));
 }
 
 export async function addSubject(subject: Subject): Promise<void> {
-    await pool.query('INSERT INTO subjects (id, name) VALUES ($1, $2)', [subject.id, subject.name]);
+    await pool.query(
+        'INSERT INTO subjects (id, name) VALUES ($1, $2)',
+        [subject.id, subject.name]
+    );
 }
 
-export async function deleteSubject(id: string): Promise<void> {
-    await pool.query('DELETE FROM subjects WHERE id = $1', [id]);
+export async function saveFcmToken(token: string): Promise<void> {
+  await pool.query(
+    'INSERT INTO fcm_tokens (token, created_at) VALUES ($1, $2) ON CONFLICT (token) DO UPDATE SET created_at = $2',
+    [token, new Date()]
+  );
+}
+
+export async function getAllFcmTokens(): Promise<string[]> {
+  const result = await pool.query('SELECT token FROM fcm_tokens');
+  return result.rows.map(row => row.token);
+}
+
+export async function deleteFcmToken(token: string): Promise<void> {
+  await pool.query('DELETE FROM fcm_tokens WHERE token = $1', [token]);
 }

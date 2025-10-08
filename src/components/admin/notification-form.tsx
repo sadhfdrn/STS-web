@@ -17,8 +17,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useBrowserNotification } from '@/hooks/use-browser-notification';
+import { usePushNotification } from '@/hooks/use-push-notification';
 import { Loader2, Calendar as CalendarIcon, X } from 'lucide-react';
-import { addNotification } from '@/lib/actions';
+import { addNotification, saveFcmToken } from '@/lib/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ const formSchema = z.object({
 export function NotificationForm() {
   const { toast } = useToast();
   const { showNotification } = useBrowserNotification();
+  const { requestPermission } = usePushNotification();
   const [isPending, startTransition] = React.useTransition();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,6 +54,11 @@ export function NotificationForm() {
     }
 
     startTransition(async () => {
+      const token = await requestPermission();
+      if (token) {
+        await saveFcmToken(token);
+      }
+
       const result = await addNotification(formData);
       if(result.success) {
           toast({ title: "Success", description: "Notification posted successfully."});

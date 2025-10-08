@@ -17,9 +17,12 @@ import {
     deleteSubject as dbDeleteSubject,
     pool,
     getCourseMaterialById as dbGetCourseMaterialById,
-    getAssignmentById as dbGetAssignmentById
+    getAssignmentById as dbGetAssignmentById,
+    saveFcmToken as dbSaveFcmToken,
+    getAllFcmTokens
 } from './db';
 import type { Notification, Assignment, CourseMaterial, Subject } from './types';
+import { sendPushNotification } from './firebase-admin';
 
 async function uploadToCatbox(file: File) {
     if (!file || file.size === 0) return null;
@@ -81,6 +84,15 @@ export async function addNotification(formData: FormData) {
   };
 
   await dbAddNotification(newNotification);
+
+  try {
+    const tokens = await getAllFcmTokens();
+    if (tokens.length > 0) {
+      await sendPushNotification(title, description, tokens);
+    }
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+  }
 
   revalidatePath('/admin/dashboard/notifications');
   revalidatePath('/notifications');
@@ -240,6 +252,19 @@ export async function addAssignment(formData: FormData) {
 
     await dbAddAssignment(newAssignment);
 
+    try {
+      const tokens = await getAllFcmTokens();
+      if (tokens.length > 0) {
+        await sendPushNotification(
+          `New Assignment: ${title}`,
+          `${description}. Deadline: ${format(deadline, 'PP')}`,
+          tokens
+        );
+      }
+    } catch (error) {
+      console.error('Error sending push notification:', error);
+    }
+
     revalidatePath('/admin/dashboard/assignments');
     revalidatePath('/assignments');
     revalidatePath('/admin/dashboard/notifications');
@@ -369,4 +394,10 @@ export async function deleteSubject(id: string) {
     revalidatePath('/admin/dashboard/materials');
     revalidatePath('/admin/dashboard/assignments');
     return { success: true, message: 'Subject deleted.' };
+}
+
+// --- FCM Token Actions ---
+export async function saveFcmToken(token: string) {
+  await dbSaveFcmToken(token);
+  return { success: true };
 }
