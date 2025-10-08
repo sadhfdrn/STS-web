@@ -9,6 +9,14 @@ The application is built with Next.js 15, uses React Server Components for optim
 ## Recent Changes
 
 **October 8, 2025:**
+- **Push Notifications with Firebase Cloud Messaging**: Implemented push notifications that work even when browser is closed
+  - Integrated Firebase Cloud Messaging (FCM) for server-side push notifications
+  - Created `usePushNotification` hook for managing FCM subscription and token management
+  - Created Firebase service worker (`/public/firebase-messaging-sw.js`) for background notifications
+  - Implemented server-side push notification sending via Firebase Admin SDK
+  - Created database table to store FCM tokens for subscribed users
+  - Push notifications automatically sent when assignments or announcements are created
+  - Users automatically subscribed when they create assignments or notifications in admin panel
 - **Browser Notifications**: Added native browser notification support
   - Created `useBrowserNotification` hook for managing browser notification permissions and display
   - Integrated browser notifications in Assignment creation form

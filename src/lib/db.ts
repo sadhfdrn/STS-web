@@ -198,3 +198,18 @@ export async function getAllFcmTokens(): Promise<string[]> {
 export async function deleteFcmToken(token: string): Promise<void> {
   await pool.query('DELETE FROM fcm_tokens WHERE token = $1', [token]);
 }
+
+export async function deleteAssignment(id: string): Promise<void> {
+  await pool.query('DELETE FROM assignments WHERE id = $1', [id]);
+}
+
+export async function deleteSubject(id: string): Promise<void> {
+  await pool.query('DELETE FROM subjects WHERE id = $1', [id]);
+}
+
+export async function updateAssignmentAnswer(assignmentId: string, answerFileUrl: string, answerFileType: 'pdf' | 'image', answerFilename: string): Promise<void> {
+  await pool.query(
+    'UPDATE assignments SET answer_file_url = $1, answer_file_type = $2, answer_filename = $3 WHERE id = $4',
+    [answerFileUrl, answerFileType, answerFilename, assignmentId]
+  );
+}

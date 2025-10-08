@@ -9,6 +9,7 @@ import {
     addCourseMaterial as dbAddCourseMaterial, 
     addAssignment as dbAddAssignment, 
     updateAssignmentSubmission,
+    updateNotificationSubmission,
     deleteNotification as dbDeleteNotification,
     deleteAssignment as dbDeleteAssignment,
     deleteCourseMaterial as dbDeleteMaterial,
@@ -289,11 +290,8 @@ export async function deleteAssignment(id: string) {
 }
 
 export async function markAssignmentAsSubmitted(assignmentId: string, notificationId: string) {
-    const success = await updateAssignmentSubmission(assignmentId, notificationId);
-
-    if (!success) {
-      return { success: false, message: 'Assignment not found.' };
-    }
+    await updateAssignmentSubmission(assignmentId);
+    await updateNotificationSubmission(notificationId);
 
     revalidatePath('/assignments');
     revalidatePath('/');
@@ -322,11 +320,7 @@ export async function uploadAnswerFile(formData: FormData) {
     const answerFilename = answerFile.name;
 
     const { updateAssignmentAnswer } = await import('./db');
-    const success = await updateAssignmentAnswer(assignmentId, answerFileUrl, answerFileType, answerFilename);
-
-    if (!success) {
-        return { success: false, message: 'Failed to update assignment.' };
-    }
+    await updateAssignmentAnswer(assignmentId, answerFileUrl, answerFileType, answerFilename);
 
     revalidatePath('/admin/dashboard/assignments');
     revalidatePath('/assignments');
