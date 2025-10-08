@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useBrowserNotification } from '@/hooks/use-browser-notification';
 import { Calendar as CalendarIcon, Loader2, Upload } from 'lucide-react';
 import { addAssignment, getSubjects } from '@/lib/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -41,6 +42,7 @@ const formSchema = z.object({
 
 export function AssignmentForm() {
   const { toast } = useToast();
+  const { showNotification } = useBrowserNotification();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const answerFileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = React.useTransition();
@@ -97,6 +99,11 @@ export function AssignmentForm() {
       
       if(result.success) {
           toast({ title: "Success", description: "Assignment created successfully."});
+          showNotification('New Assignment Created', {
+            body: `${values.title} - Due: ${format(values.deadline, 'PP')}`,
+            icon: '/icon-192x192.png',
+            tag: 'assignment'
+          });
           form.reset();
           if (fileInputRef.current) fileInputRef.current.value = "";
           if (answerFileInputRef.current) answerFileInputRef.current.value = "";
