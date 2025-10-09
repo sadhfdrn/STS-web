@@ -35,6 +35,19 @@ async function setupDatabase() {
         END IF;
       END $$;
     `);
+    
+    // Add level column if it doesn't exist
+    await client.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'notifications' AND column_name = 'level'
+        ) THEN
+          ALTER TABLE notifications ADD COLUMN level VARCHAR(10) DEFAULT '100';
+        END IF;
+      END $$;
+    `);
     console.log('✅ Table "notifications" created/updated successfully.');
 
     // Create subjects table
@@ -70,6 +83,19 @@ async function setupDatabase() {
         END IF;
       END $$;
     `);
+    
+    // Add level column if it doesn't exist
+    await client.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'course_materials' AND column_name = 'level'
+        ) THEN
+          ALTER TABLE course_materials ADD COLUMN level VARCHAR(10) DEFAULT '100';
+        END IF;
+      END $$;
+    `);
     console.log('✅ Table "course_materials" created/updated successfully.');
 
     // Create assignments table
@@ -92,7 +118,29 @@ async function setupDatabase() {
         notification_id VARCHAR(255)
       );
     `);
+    
+    // Add level column if it doesn't exist
+    await client.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'assignments' AND column_name = 'level'
+        ) THEN
+          ALTER TABLE assignments ADD COLUMN level VARCHAR(10) DEFAULT '100';
+        END IF;
+      END $$;
+    `);
     console.log('✅ Table "assignments" created or already exists.');
+
+    // Create fcm_tokens table for push notifications
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS fcm_tokens (
+        token TEXT PRIMARY KEY,
+        created_at TIMESTAMPTZ NOT NULL
+      );
+    `);
+    console.log('✅ Table "fcm_tokens" created or already exists.');
 
     console.log('\nDatabase setup complete!');
 

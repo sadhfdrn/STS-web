@@ -17,6 +17,11 @@ The application is built with Next.js 15, uses React Server Components for optim
   - Replaced sidebar book icon with ASSON favicon
   - Confirmed green color theme for official ASSON branding
   - Data filtering by academic level across all features
+- **Database Schema Updates**: Added missing columns and tables for level-based filtering and notifications
+  - Created `fcm_tokens` table for Firebase Cloud Messaging tokens
+  - Added `level` column to notifications, assignments, and course_materials tables
+  - Fixed Next.js 15 async params compatibility
+  - Configured cross-origin requests for Replit environment
 
 **October 8, 2025:**
 - **Push Notifications with Firebase Cloud Messaging**: Implemented push notifications that work even when browser is closed
