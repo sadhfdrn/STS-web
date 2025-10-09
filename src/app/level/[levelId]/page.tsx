@@ -26,8 +26,8 @@ const levelInfo: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
-export default async function LevelPage({ params }: { params: { levelId: string } }) {
-  const { levelId } = params;
+export default async function LevelPage({ params }: { params: Promise<{ levelId: string }> }) {
+  const { levelId } = await params;
 
   if (!['100', '200', '300', '400'].includes(levelId)) {
     notFound();

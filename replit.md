@@ -8,6 +8,16 @@ The application is built with Next.js 15, uses React Server Components for optim
 
 ## Recent Changes
 
+**October 9, 2025:**
+- **ASSON Branding Update**: Customized application for Association of Statistics Students Nigeria
+  - Updated site title to "ASSON (Association of Statistics Students Nigeria)"
+  - Implemented level-based navigation system (100, 200, 300, 400 levels)
+  - Created dedicated pages for each academic level with custom hero headers
+  - Added NotificationBell component with multi-level subscription modal
+  - Replaced sidebar book icon with ASSON favicon
+  - Confirmed green color theme for official ASSON branding
+  - Data filtering by academic level across all features
+
 **October 8, 2025:**
 - **Push Notifications with Firebase Cloud Messaging**: Implemented push notifications that work even when browser is closed
   - Integrated Firebase Cloud Messaging (FCM) for server-side push notifications
@@ -44,7 +54,7 @@ The application is built with Next.js 15, uses React Server Components for optim
   - Updated all server actions to use database operations
   - Updated all pages to fetch data from PostgreSQL instead of mock data
   - Fixed Next.js 15 async cookies compliance in authentication module
-- **Design Modernization**: Updated color scheme from green to vibrant purple/blue gradients for a more modern look
+- **Design Modernization**: Updated color scheme to green theme for ASSON branding
 - **Hero Section Enhancement**: Added gradient background with texture overlay, larger typography, and clear CTAs
 - **Card Design Improvements**: Added hover animations, gradient accents, and better visual hierarchy
 - **Mobile Optimization**: Implemented responsive design with proper breakpoints for mobile, tablet, and desktop views
@@ -70,7 +80,7 @@ The application uses Next.js 15 with the App Router pattern and React Server Com
 
 **Styling:**
 - Uses Tailwind CSS with CSS variables for theming
-- Modern color scheme based on purple/blue gradients (Primary: HSL 262 83% 58%)
+- Green color scheme for ASSON branding (Primary: HSL 142 76% 36% light, HSL 142 70% 45% dark)
 - Supports light and dark modes with theme persistence via localStorage
 - Typography: Space Grotesk for headings, Inter for body text
 - Fully responsive design with mobile-first approach

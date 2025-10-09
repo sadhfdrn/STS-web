@@ -30,6 +30,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  allowedDevOrigins: ['*.worf.replit.dev'],
 };
 
 export default nextConfig;
