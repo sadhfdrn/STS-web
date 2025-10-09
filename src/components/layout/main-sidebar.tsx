@@ -14,7 +14,7 @@ import {
 import { Home, Bell, Book, LogIn, User, Power, FilePenLine, FolderKanban } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Logo } from '@/components/icons/logo';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth';
 import { useEffect } from 'react';
@@ -49,8 +49,8 @@ export function MainSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <Link href="/" className="flex items-center gap-2">
-          <Logo className="w-8 h-8" />
-          <span className="font-headline text-lg font-semibold whitespace-nowrap">StatsSite</span>
+          <Image src="/favicon-32x32.png" alt="ASSON Logo" width={32} height={32} className="w-8 h-8" />
+          <span className="font-headline text-lg font-semibold whitespace-nowrap">ASSON</span>
         </Link>
       </SidebarHeader>
       <SidebarContent className="p-2">

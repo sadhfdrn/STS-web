@@ -12,6 +12,7 @@ const PAGE_SIZE = 5;
 export default function NotificationsPage() {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
+  const levelFilter = searchParams.get('level');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -21,12 +22,16 @@ export default function NotificationsPage() {
       const sorted = allNotifications.sort((a, b) => b.date.getTime() - a.date.getTime());
       
       const twentyFourHoursAgo = subHours(new Date(), 24);
-      const filtered = sorted.filter(n => {
+      let filtered = sorted.filter(n => {
         if (n.submitted && n.submissionDate) {
           return n.submissionDate.getTime() >= twentyFourHoursAgo.getTime();
         }
         return true;
       });
+
+      if (levelFilter) {
+        filtered = filtered.filter(n => n.level === levelFilter);
+      }
 
       const pages = Math.ceil(filtered.length / PAGE_SIZE);
       const start = (currentPage - 1) * PAGE_SIZE;
@@ -36,7 +41,7 @@ export default function NotificationsPage() {
       setTotalPages(pages);
     }
     loadNotifications();
-  }, [currentPage]);
+  }, [currentPage, levelFilter]);
 
 
   return (

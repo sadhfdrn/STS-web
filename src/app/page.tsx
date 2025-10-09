@@ -1,90 +1,56 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { format } from 'date-fns';
-import { getNotifications } from '@/lib/db';
-import type { Notification } from '@/lib/types';
-import { subHours } from 'date-fns';
-
 
 export default async function Home() {
-  const notifications = await getNotifications();
-
-  const twentyFourHoursAgo = subHours(new Date(), 24);
-
-  const combinedNotifications = notifications
-    .filter(n => {
-      // If it's submitted, only show it if it was submitted in the last 24 hours
-      if (n.submitted && n.submissionDate) {
-        return n.submissionDate.getTime() > twentyFourHoursAgo.getTime();
-      }
-      // If not submitted, always show
-      return true;
-    })
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, 3);
-    
-  const isLoading = false; // No more loading state needed for mock data
-
+  const levels = [
+    { level: '100', title: '100 Level', description: 'First year students portal' },
+    { level: '200', title: '200 Level', description: 'Second year students portal' },
+    { level: '300', title: '300 Level', description: 'Third year students portal' },
+    { level: '400', title: '400 Level', description: 'Final year students portal' },
+  ];
 
   return (
     <div className="space-y-8 md:space-y-12">
       <section className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-6 sm:p-8 md:p-12 shadow-2xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAtMTRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bS0xNCAwYzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDE0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-20"></div>
-        <div className="relative z-10">
+        <div className="relative z-10 text-center">
           <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white">
-            Welcome to StatsSite
+            Welcome to ASSON
           </h1>
-          <p className="mt-3 md:mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl">
-            Your central hub for the 100-level Statistics department. Find course materials, announcements, and more.
+          <p className="mt-3 md:mt-4 text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+            Association of Statistics Students Nigeria - Your hub for course materials, announcements, and academic resources.
           </p>
-          <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <Button asChild size="lg" variant="secondary" className="font-semibold shadow-xl w-full sm:w-auto">
-              <Link href="/materials">Explore Materials</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/20 hover:text-white font-semibold w-full sm:w-auto">
-              <Link href="/notifications">Latest Updates</Link>
-            </Button>
-          </div>
         </div>
       </section>
 
       <section>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 md:mb-6">
-          <div>
-            <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Latest Notifications</h2>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Stay updated with the latest announcements</p>
-          </div>
-          <Button asChild variant="ghost" className="text-primary hover:text-primary/80 self-start sm:self-auto">
-            <Link href="/notifications">View all →</Link>
-          </Button>
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Select Your Level
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+            Choose your academic level to access relevant materials and updates
+          </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {isLoading ? (
-             Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}><CardContent className="p-6">Loading...</CardContent></Card>
-             ))
-          ) : combinedNotifications.length > 0 ? (
-            combinedNotifications.map((notification: Notification) => (
-              <Card key={notification.id} className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 overflow-hidden">
-                <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                <CardHeader className="pb-3">
-                  <CardTitle className="font-headline text-xl group-hover:text-primary transition-colors">{notification.title}</CardTitle>
-                  <CardDescription className="flex items-center gap-2 text-sm">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {format(notification.date, 'MMMM d, yyyy')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="line-clamp-3 text-sm text-muted-foreground leading-relaxed">{notification.description}</p>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <p>No new notifications.</p>
-          )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {levels.map(({ level, title, description }) => (
+            <Link key={level} href={`/level/${level}`}>
+              <div className="group relative overflow-hidden rounded-xl border-2 border-primary/20 bg-card p-6 sm:p-8 transition-all duration-300 hover:border-primary hover:shadow-2xl hover:-translate-y-2">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10 text-center">
+                  <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300">
+                    <span className="text-2xl font-bold text-primary">{level}</span>
+                  </div>
+                  <h3 className="font-headline text-xl sm:text-2xl font-bold mb-2 group-hover:text-primary transition-colors duration-300">
+                    {title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {description}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
     </div>

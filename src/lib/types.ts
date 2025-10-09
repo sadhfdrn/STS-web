@@ -9,6 +9,7 @@ export interface Notification {
   eventDate?: Date;
   submitted?: boolean;
   submissionDate?: Date;
+  level: string;
 }
 
 export interface Subject {
@@ -24,6 +25,7 @@ export interface CourseMaterial {
   fileUrl: string;
   fileType: FileType;
   uploadDate: Date;
+  level: string;
 }
 
 export interface Assignment {
@@ -42,4 +44,5 @@ export interface Assignment {
   submitted?: boolean;
   submissionDate?: Date;
   notificationId?: string;
+  level: string;
 }

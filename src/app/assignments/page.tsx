@@ -32,6 +32,7 @@ function MarkAsSubmittedButton({ assignmentId, notificationId }: { assignmentId:
 export default function AssignmentsPage() {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
+  const levelFilter = searchParams.get('level');
   const session = useSession();
   
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -42,7 +43,13 @@ export default function AssignmentsPage() {
     async function loadAssignments() {
       setIsLoading(true);
       const allAssignments = await getAllAssignments();
-      const sorted = allAssignments.sort((a,b) => b.date.getTime() - a.date.getTime());
+      let filtered = allAssignments;
+      
+      if (levelFilter) {
+        filtered = filtered.filter(a => a.level === levelFilter);
+      }
+      
+      const sorted = filtered.sort((a,b) => b.date.getTime() - a.date.getTime());
       const pages = Math.ceil(sorted.length / PAGE_SIZE);
       const start = (currentPage - 1) * PAGE_SIZE;
       const end = start + PAGE_SIZE;
@@ -52,7 +59,7 @@ export default function AssignmentsPage() {
       setIsLoading(false);
     }
     loadAssignments();
-  }, [currentPage]);
+  }, [currentPage, levelFilter]);
 
 
   const fileTypeIcons = {

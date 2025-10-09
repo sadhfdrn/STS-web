@@ -13,9 +13,10 @@ const PAGE_SIZE = 6;
 export default function MaterialsPage() {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
-  const subjectFilter = searchParams.get('subject') as Subject | 'All' | null;
+  const subjectFilter = searchParams.get('subject');
   const fileTypeFilter = searchParams.get('fileType') as FileType | 'All' | null;
   const query = searchParams.get('query');
+  const levelFilter = searchParams.get('level');
 
   const [materials, setMaterials] = useState<CourseMaterial[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -27,6 +28,9 @@ export default function MaterialsPage() {
       const courseMaterials = await getAllCourseMaterials();
       let filtered = courseMaterials;
 
+      if (levelFilter) {
+        filtered = filtered.filter(m => m.level === levelFilter);
+      }
       if (subjectFilter && subjectFilter !== 'All') {
         filtered = filtered.filter(m => m.subject === subjectFilter);
       }
@@ -48,7 +52,7 @@ export default function MaterialsPage() {
       setIsLoading(false);
     }
     loadMaterials();
-  }, [currentPage, subjectFilter, fileTypeFilter, query]);
+  }, [currentPage, subjectFilter, fileTypeFilter, query, levelFilter]);
 
   return (
     <div className="space-y-6">

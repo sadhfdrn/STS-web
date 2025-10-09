@@ -8,10 +8,18 @@ export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-export async function getNotifications(): Promise<Notification[]> {
-  const result = await pool.query(
-    'SELECT * FROM notifications ORDER BY date DESC'
-  );
+export async function getNotifications(level?: string): Promise<Notification[]> {
+  let query = 'SELECT * FROM notifications';
+  const params: any[] = [];
+  
+  if (level) {
+    query += ' WHERE level = $1';
+    params.push(level);
+  }
+  
+  query += ' ORDER BY date DESC';
+  
+  const result = await pool.query(query, params);
   return result.rows.map(row => ({
     id: row.id,
     title: row.title,
@@ -20,13 +28,14 @@ export async function getNotifications(): Promise<Notification[]> {
     eventDate: row.event_date ? new Date(row.event_date) : undefined,
     submitted: row.submitted,
     submissionDate: row.submission_date ? new Date(row.submission_date) : undefined,
+    level: row.level || '100',
   }));
 }
 
 export async function addNotification(notification: Notification): Promise<void> {
   await pool.query(
-    'INSERT INTO notifications (id, title, description, date, event_date, submitted, submission_date) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    [notification.id, notification.title, notification.description, notification.date, notification.eventDate || null, notification.submitted || false, notification.submissionDate || null]
+    'INSERT INTO notifications (id, title, description, date, event_date, submitted, submission_date, level) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+    [notification.id, notification.title, notification.description, notification.date, notification.eventDate || null, notification.submitted || false, notification.submissionDate || null, notification.level]
   );
 }
 
@@ -34,11 +43,19 @@ export async function deleteNotification(id: string): Promise<void> {
     await pool.query('DELETE FROM notifications WHERE id = $1', [id]);
 }
 
-export async function getCourseMaterials(): Promise<CourseMaterial[]> {
+export async function getCourseMaterials(level?: string): Promise<CourseMaterial[]> {
   try {
-    const result = await pool.query(
-      'SELECT * FROM course_materials ORDER BY upload_date DESC'
-    );
+    let query = 'SELECT * FROM course_materials';
+    const params: any[] = [];
+    
+    if (level) {
+      query += ' WHERE level = $1';
+      params.push(level);
+    }
+    
+    query += ' ORDER BY upload_date DESC';
+    
+    const result = await pool.query(query, params);
     return result.rows.map(row => ({
       id: row.id,
       title: row.title,
@@ -47,6 +64,7 @@ export async function getCourseMaterials(): Promise<CourseMaterial[]> {
       fileUrl: row.file_url,
       fileType: row.file_type,
       uploadDate: new Date(row.upload_date),
+      level: row.level || '100',
     }));
   } catch (error) {
     console.error('Error fetching course materials:', error);
@@ -66,13 +84,14 @@ export async function getCourseMaterialById(id: string): Promise<CourseMaterial 
         fileUrl: row.file_url,
         fileType: row.file_type as FileType,
         uploadDate: new Date(row.upload_date),
+        level: row.level || '100',
     };
 }
 
 export async function addCourseMaterial(material: CourseMaterial): Promise<void> {
   await pool.query(
-    'INSERT INTO course_materials (id, title, subject, filename, file_url, file_type, upload_date) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    [material.id, material.title, material.subject, material.filename, material.fileUrl, material.fileType, material.uploadDate]
+    'INSERT INTO course_materials (id, title, subject, filename, file_url, file_type, upload_date, level) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+    [material.id, material.title, material.subject, material.filename, material.fileUrl, material.fileType, material.uploadDate, material.level]
   );
 }
 
@@ -80,11 +99,19 @@ export async function deleteCourseMaterial(id: string): Promise<void> {
     await pool.query('DELETE FROM course_materials WHERE id = $1', [id]);
 }
 
-export async function getAssignments(): Promise<Assignment[]> {
+export async function getAssignments(level?: string): Promise<Assignment[]> {
   try {
-    const result = await pool.query(
-      'SELECT * FROM assignments ORDER BY date DESC'
-    );
+    let query = 'SELECT * FROM assignments';
+    const params: any[] = [];
+    
+    if (level) {
+      query += ' WHERE level = $1';
+      params.push(level);
+    }
+    
+    query += ' ORDER BY date DESC';
+    
+    const result = await pool.query(query, params);
     return result.rows.map(row => ({
       id: row.id,
       title: row.title,
@@ -101,6 +128,7 @@ export async function getAssignments(): Promise<Assignment[]> {
       submitted: row.submitted,
       submissionDate: row.submission_date ? new Date(row.submission_date) : undefined,
       notificationId: row.notification_id,
+      level: row.level || '100',
     }));
   } catch (error) {
     console.error('Error fetching assignments:', error);
@@ -128,12 +156,13 @@ export async function getAssignmentById(id: string): Promise<Assignment | undefi
         submitted: row.submitted,
         submissionDate: row.submission_date ? new Date(row.submission_date) : undefined,
         notificationId: row.notification_id,
+        level: row.level || '100',
     };
 }
 
 export async function addAssignment(assignment: Assignment): Promise<void> {
   await pool.query(
-    'INSERT INTO assignments (id, title, description, subject, deadline, file_url, file_type, filename, date, answer_file_url, answer_file_type, answer_filename, submitted, submission_date, notification_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)',
+    'INSERT INTO assignments (id, title, description, subject, deadline, file_url, file_type, filename, date, answer_file_url, answer_file_type, answer_filename, submitted, submission_date, notification_id, level) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)',
     [
       assignment.id,
       assignment.title,
@@ -150,6 +179,7 @@ export async function addAssignment(assignment: Assignment): Promise<void> {
       assignment.submitted || false,
       assignment.submissionDate || null,
       assignment.notificationId,
+      assignment.level,
     ]
   );
 }

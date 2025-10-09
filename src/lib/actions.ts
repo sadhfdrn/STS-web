@@ -328,23 +328,23 @@ export async function uploadAnswerFile(formData: FormData) {
     return { success: true, message: 'Answer file uploaded successfully.' };
 }
 
-export async function getAllNotifications() {
+export async function getAllNotifications(level?: string) {
     const { getNotifications } = await import('./db');
-    return await getNotifications();
+    return await getNotifications(level);
 }
 
-export async function getAllCourseMaterials() {
+export async function getAllCourseMaterials(level?: string) {
     const { getCourseMaterials } = await import('./db');
-    return await getCourseMaterials();
+    return await getCourseMaterials(level);
 }
 
 export async function getCourseMaterialById(id: string) {
     return await dbGetCourseMaterialById(id);
 }
 
-export async function getAllAssignments() {
+export async function getAllAssignments(level?: string) {
     const { getAssignments } = await import('./db');
-    return await getAssignments();
+    return await getAssignments(level);
 }
 
 export async function getAssignmentById(id: string) {

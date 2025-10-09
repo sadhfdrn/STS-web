@@ -22,6 +22,7 @@ import { Loader2, Calendar as CalendarIcon, X } from 'lucide-react';
 import { addNotification, saveFcmToken } from '@/lib/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -29,6 +30,7 @@ const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters long.'),
   description: z.string().min(10, 'Description must be at least 10 characters long.'),
   eventDate: z.date().optional(),
+  level: z.string().min(1, 'Level is required'),
 });
 
 export function NotificationForm() {
@@ -42,6 +44,7 @@ export function NotificationForm() {
       title: '',
       description: '',
       eventDate: undefined,
+      level: '100',
     },
   });
 
@@ -49,6 +52,7 @@ export function NotificationForm() {
     const formData = new FormData();
     formData.append('title', values.title);
     formData.append('description', values.description);
+    formData.append('level', values.level);
     if (values.eventDate) {
       formData.append('eventDate', values.eventDate.toISOString());
     }
@@ -152,6 +156,29 @@ export function NotificationForm() {
                   />
                 </PopoverContent>
               </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="level"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Level</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="100">100 Level</SelectItem>
+                  <SelectItem value="200">200 Level</SelectItem>
+                  <SelectItem value="300">300 Level</SelectItem>
+                  <SelectItem value="400">400 Level</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

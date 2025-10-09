@@ -38,6 +38,7 @@ const formSchema = z.object({
   deadline: z.date(),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
   answerFile: z.instanceof(File).nullish(),
+  level: z.string().min(1, 'Level is required'),
 });
 
 
@@ -68,6 +69,7 @@ export function AssignmentForm() {
         deadline: new Date(),
         file: undefined,
         answerFile: undefined,
+        level: '100',
     },
   });
 
@@ -247,6 +249,29 @@ export function AssignmentForm() {
               <FormDescription>
                 Upload the solution file for this assignment.
               </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="level"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Level</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="100">100 Level</SelectItem>
+                  <SelectItem value="200">200 Level</SelectItem>
+                  <SelectItem value="300">300 Level</SelectItem>
+                  <SelectItem value="400">400 Level</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

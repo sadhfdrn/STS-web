@@ -7,8 +7,8 @@ import { getSession } from '@/lib/auth';
 import { SessionProvider } from '@/components/session-provider';
 
 export const metadata: Metadata = {
-  title: 'StatsSite - University Statistics Department',
-  description: 'Official website for the 100-level Statistics department.',
+  title: 'ASSON (Association of Statistics Students Nigeria)',
+  description: 'Official website for the Association of Statistics Students Nigeria.',
 };
 
 export default async function RootLayout({

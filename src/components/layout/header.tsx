@@ -1,6 +1,7 @@
 'use client';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { NotificationBell } from '@/components/notification-bell';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/components/session-provider';
 
@@ -10,6 +11,10 @@ export function Header() {
 
     const getPageTitle = () => {
         if (pathname === '/') return 'Home';
+        if (pathname.startsWith('/level/')) {
+            const levelId = pathname.split('/')[2];
+            return `${levelId} Level Portal`;
+        }
         if (pathname.startsWith('/notifications')) return 'Notifications';
         if (pathname.startsWith('/materials')) return 'Course Materials';
         if (pathname.startsWith('/assignments')) return 'Assignments';
@@ -20,7 +25,7 @@ export function Header() {
              const title = lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
              return `Admin / ${title}`;
         }
-        return 'StatsSite';
+        return 'ASSON';
     };
 
   return (
@@ -29,12 +34,13 @@ export function Header() {
         <SidebarTrigger className="md:hidden" />
         <h1 className="text-lg font-semibold md:text-xl font-headline">{getPageTitle()}</h1>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         {session?.email && (
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {session.email}
             </span>
         )}
+        <NotificationBell />
         <ThemeToggle />
       </div>
     </header>

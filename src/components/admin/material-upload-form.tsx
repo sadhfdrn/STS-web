@@ -26,6 +26,7 @@ const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters.'),
   subject: z.string().min(1, 'Subject is required'),
   file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
+  level: z.string().min(1, 'Level is required'),
 });
 
 export function MaterialUploadForm() {
@@ -62,6 +63,7 @@ export function MaterialUploadForm() {
         title: '',
         subject: '',
         file: undefined,
+        level: '100',
     },
   });
 
@@ -70,6 +72,7 @@ export function MaterialUploadForm() {
     formData.append('title', values.title);
     formData.append('subject', values.subject);
     formData.append('file', values.file);
+    formData.append('level', values.level);
 
     startTransition(async () => {
       const result = await addMaterial(formData);
@@ -126,7 +129,7 @@ export function MaterialUploadForm() {
         <FormField
           control={form.control}
           name="file"
-          render={({ field: { onChange, value, ...rest } }) => (
+          render={({ field: { onChange, value, ref, ...rest } }) => (
             <FormItem>
               <FormLabel>File</FormLabel>
               <FormControl>
@@ -140,6 +143,29 @@ export function MaterialUploadForm() {
                     {...rest}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="level"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Level</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="100">100 Level</SelectItem>
+                  <SelectItem value="200">200 Level</SelectItem>
+                  <SelectItem value="300">300 Level</SelectItem>
+                  <SelectItem value="400">400 Level</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
