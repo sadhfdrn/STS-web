@@ -49,7 +49,7 @@ export function MainSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/favicon-32x32.png" alt="ASSON Logo" width={32} height={32} className="w-8 h-8" />
+          <Image src="/android-chrome-512x512.png" alt="ASSON Logo" width={32} height={32} className="w-8 h-8" />
           <span className="font-headline text-lg font-semibold whitespace-nowrap">ASSON</span>
         </Link>
       </SidebarHeader>
