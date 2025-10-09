@@ -56,7 +56,7 @@ async function uploadToCatbox(file: File) {
 const notificationSchema = z.object({
   title: z.string().min(5),
   description: z.string().min(10),
-  eventDate: z.string().optional(),
+  eventDate: z.string().nullable().optional(),
   level: z.string().min(1),
 });
 
