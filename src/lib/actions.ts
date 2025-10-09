@@ -61,14 +61,19 @@ const notificationSchema = z.object({
 });
 
 export async function addNotification(formData: FormData) {
-  const validatedFields = notificationSchema.safeParse({
+  const data = {
     title: formData.get('title'),
     description: formData.get('description'),
     eventDate: formData.get('eventDate'),
     level: formData.get('level'),
-  });
+  };
+  
+  console.log('Received form data:', data);
+  
+  const validatedFields = notificationSchema.safeParse(data);
 
   if (!validatedFields.success) {
+    console.error('Validation failed:', validatedFields.error.flatten().fieldErrors);
     return {
       success: false,
       message: 'Invalid data. Title and description are required.',
