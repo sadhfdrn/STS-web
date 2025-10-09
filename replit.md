@@ -17,6 +17,11 @@ The application is built with Next.js 15, uses React Server Components for optim
   - Replaced sidebar book icon with ASSON favicon
   - Confirmed green color theme for official ASSON branding
   - Data filtering by academic level across all features
+- **Sidebar Level Context Preservation**: Enhanced sidebar to maintain level filter across navigation
+  - Sidebar now detects current level from URL path or query parameters
+  - Automatically appends level filter to Notifications, Assignments, and Course Materials links
+  - When on `/level/100`, sidebar links become `/notifications?level=100`, `/assignments?level=100`, etc.
+  - Home link remains unaffected by level context for easy return to level selection
 - **Database Schema Updates**: Added missing columns and tables for level-based filtering and notifications
   - Created `fcm_tokens` table for Firebase Cloud Messaging tokens
   - Added `level` column to notifications, assignments, and course_materials tables

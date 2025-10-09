@@ -13,11 +13,11 @@ import {
 } from '@/components/ui/sidebar';
 import { Home, Bell, Book, LogIn, User, Power, FilePenLine, FolderKanban } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 const menuItems = [
   { href: '/', label: 'Home', icon: Home, tooltip: 'Home' },
@@ -36,8 +36,20 @@ const adminMenuItems = [
 
 export function MainSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const session = useSession();
   const { setOpenMobile, isMobile } = useSidebar();
+
+  // Extract current level from pathname or search params
+  const currentLevel = useMemo(() => {
+    // Check if we're on a level page (e.g., /level/100)
+    const levelMatch = pathname.match(/^\/level\/(\d+)/);
+    if (levelMatch) {
+      return levelMatch[1];
+    }
+    // Check if there's a level query parameter
+    return searchParams.get('level');
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     if (isMobile) {
@@ -55,20 +67,29 @@ export function MainSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton 
-                asChild
-                isActive={pathname === item.href}
-                tooltip={item.tooltip}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {menuItems.map((item) => {
+            let href = item.href;
+            if (currentLevel && item.href !== '/') {
+              const url = new URL(item.href, 'http://localhost');
+              url.searchParams.set('level', currentLevel);
+              href = url.pathname + url.search;
+            }
+            
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={pathname === item.href}
+                  tooltip={item.tooltip}
+                >
+                  <Link href={href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
         {session && (
             <SidebarMenu>
