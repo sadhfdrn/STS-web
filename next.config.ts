@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  allowedDevOrigins: ['*.worf.replit.dev'],
+  allowedDevOrigins: ['*.riker.replit.dev', '127.0.0.1', 'localhost'],
 };
 
 export default nextConfig;
