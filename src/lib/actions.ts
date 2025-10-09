@@ -57,6 +57,7 @@ const notificationSchema = z.object({
   title: z.string().min(5),
   description: z.string().min(10),
   eventDate: z.string().optional(),
+  level: z.string().min(1),
 });
 
 export async function addNotification(formData: FormData) {
@@ -64,6 +65,7 @@ export async function addNotification(formData: FormData) {
     title: formData.get('title'),
     description: formData.get('description'),
     eventDate: formData.get('eventDate'),
+    level: formData.get('level'),
   });
 
   if (!validatedFields.success) {
@@ -73,7 +75,7 @@ export async function addNotification(formData: FormData) {
     };
   }
   
-  const { title, description, eventDate } = validatedFields.data;
+  const { title, description, eventDate, level } = validatedFields.data;
   
   const newNotification: Notification = {
       id: `notif-${Date.now()}`,
@@ -82,6 +84,7 @@ export async function addNotification(formData: FormData) {
       date: new Date(),
       eventDate: eventDate ? new Date(eventDate) : undefined,
       submitted: false,
+      level,
   };
 
   await dbAddNotification(newNotification);
@@ -117,6 +120,7 @@ const materialSchema = z.object({
     title: z.string().min(3, 'Title is required.'),
     subject: z.string().min(1, 'Subject is required.'),
     file: z.instanceof(File).refine(file => file.size > 0, "File is required."),
+    level: z.string().min(1, 'Level is required.'),
 });
 
 export async function addMaterial(formData: FormData) {
@@ -124,6 +128,7 @@ export async function addMaterial(formData: FormData) {
         title: formData.get('title'),
         subject: formData.get('subject'),
         file: formData.get('file'),
+        level: formData.get('level'),
     };
 
     const validatedFields = materialSchema.safeParse(rawFormData);
@@ -135,7 +140,7 @@ export async function addMaterial(formData: FormData) {
         };
     }
 
-    const { title, subject, file } = validatedFields.data;
+    const { title, subject, file, level } = validatedFields.data;
 
     const fileUrl = await uploadToCatbox(file);
 
@@ -155,6 +160,7 @@ export async function addMaterial(formData: FormData) {
         fileUrl: fileUrl,
         fileType: fileType,
         uploadDate: new Date(),
+        level,
     };
 
     await dbAddCourseMaterial(newMaterial);
@@ -182,6 +188,7 @@ const assignmentSchema = z.object({
     deadline: z.date(),
     file: z.instanceof(File).refine(file => file.size > 0, "File is required.").refine(file => ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type), "Only PDF and image files are allowed."),
     answerFile: z.instanceof(File).nullish(),
+    level: z.string().min(1, 'Level is required'),
 });
 
 export async function addAssignment(formData: FormData) {
@@ -192,6 +199,7 @@ export async function addAssignment(formData: FormData) {
         deadline: new Date(formData.get('deadline') as string),
         file: formData.get('file'),
         answerFile: formData.get('answerFile'),
+        level: formData.get('level'),
     };
     
     const validatedFields = assignmentSchema.safeParse(rawFormData);
@@ -204,7 +212,7 @@ export async function addAssignment(formData: FormData) {
         };
     }
 
-    const { title, description, subject, deadline, file, answerFile } = validatedFields.data;
+    const { title, description, subject, deadline, file, answerFile, level } = validatedFields.data;
 
     const fileUrl = await uploadToCatbox(file);
     if (!fileUrl) {
@@ -229,7 +237,8 @@ export async function addAssignment(formData: FormData) {
         title: `New Assignment: ${title}`,
         description: `${description}. Deadline: ${format(deadline, 'PP')}. View details in the Assignments section.`,
         date: new Date(),
-        submitted: false
+        submitted: false,
+        level,
     };
 
     await dbAddNotification(newNotification);
@@ -248,7 +257,8 @@ export async function addAssignment(formData: FormData) {
         answerFileType,
         answerFilename,
         submitted: false,
-        notificationId: notificationId
+        notificationId: notificationId,
+        level,
     };
 
     await dbAddAssignment(newAssignment);
