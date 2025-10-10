@@ -1,5 +1,5 @@
 
-export type FileType = 'pdf' | 'image' | 'video';
+export type FileType = 'pdf' | 'image' | 'video' | 'powerpoint';
 
 export interface Notification {
   id: string;
@@ -35,11 +35,11 @@ export interface Assignment {
   subject: string;
   deadline: Date;
   fileUrl: string;
-  fileType: 'pdf' | 'image';
+  fileType: 'pdf' | 'image' | 'powerpoint';
   filename: string;
   date: Date;
   answerFileUrl?: string | null;
-  answerFileType?: 'pdf' | 'image' | null;
+  answerFileType?: 'pdf' | 'image' | 'powerpoint' | null;
   answerFilename?: string | null;
   submitted?: boolean;
   submissionDate?: Date;

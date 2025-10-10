@@ -153,9 +153,10 @@ export async function addMaterial(formData: FormData) {
         return { success: false, message: 'File upload failed. Please try again.' };
     }
     
-    let fileType: 'pdf' | 'image' | 'video' = 'pdf';
+    let fileType: 'pdf' | 'image' | 'video' | 'powerpoint' = 'pdf';
     if(file.type.startsWith('image/')) fileType = 'image';
     if(file.type.startsWith('video/')) fileType = 'video';
+    if(file.type.includes('powerpoint') || file.type.includes('presentation')) fileType = 'powerpoint';
     
     const newMaterial: CourseMaterial = {
         id: `mat-${Date.now()}`,
@@ -191,7 +192,7 @@ const assignmentSchema = z.object({
     description: z.string().min(10),
     subject: z.string().min(1, 'Subject is required'),
     deadline: z.date(),
-    file: z.instanceof(File).refine(file => file.size > 0, "File is required.").refine(file => ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type), "Only PDF and image files are allowed."),
+    file: z.instanceof(File).refine(file => file.size > 0, "File is required.").refine(file => ['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(file.type), "Only PDF, image, and PowerPoint files are allowed."),
     answerFile: z.instanceof(File).nullish(),
     level: z.string().min(1, 'Level is required'),
 });
@@ -223,16 +224,24 @@ export async function addAssignment(formData: FormData) {
     if (!fileUrl) {
         return { success: false, message: 'Assignment file upload failed. Please try again.' };
     }
-    const fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
+    let fileType: 'pdf' | 'image' | 'powerpoint' = 'pdf';
+    if (file.type.startsWith('image/')) fileType = 'image';
+    if (file.type.includes('powerpoint') || file.type.includes('presentation')) fileType = 'powerpoint';
     
     let answerFileUrl: string | null = null;
-    let answerFileType: 'pdf' | 'image' | null = null;
+    let answerFileType: 'pdf' | 'image' | 'powerpoint' | null = null;
     let answerFilename: string | null = null;
     
     if (answerFile && answerFile.size > 0) {
         answerFileUrl = await uploadToCatbox(answerFile);
         if (answerFileUrl) {
-            answerFileType = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
+            if (answerFile.type.startsWith('image/')) {
+                answerFileType = 'image';
+            } else if (answerFile.type.includes('powerpoint') || answerFile.type.includes('presentation')) {
+                answerFileType = 'powerpoint';
+            } else {
+                answerFileType = 'pdf';
+            }
             answerFilename = answerFile.name;
         }
     }
@@ -322,8 +331,8 @@ export async function uploadAnswerFile(formData: FormData) {
         return { success: false, message: 'No file selected.' };
     }
 
-    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(answerFile.type)) {
-        return { success: false, message: 'Only PDF and image files are allowed.' };
+    if (!['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(answerFile.type)) {
+        return { success: false, message: 'Only PDF, image, and PowerPoint files are allowed.' };
     }
 
     const answerFileUrl = await uploadToCatbox(answerFile);
@@ -331,7 +340,12 @@ export async function uploadAnswerFile(formData: FormData) {
         return { success: false, message: 'File upload failed. Please try again.' };
     }
 
-    const answerFileType = answerFile.type.startsWith('image/') ? 'image' : 'pdf';
+    let answerFileType: 'pdf' | 'image' | 'powerpoint' = 'pdf';
+    if (answerFile.type.startsWith('image/')) {
+        answerFileType = 'image';
+    } else if (answerFile.type.includes('powerpoint') || answerFile.type.includes('presentation')) {
+        answerFileType = 'powerpoint';
+    }
     const answerFilename = answerFile.name;
 
     const { updateAssignmentAnswer } = await import('./db');

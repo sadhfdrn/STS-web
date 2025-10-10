@@ -237,7 +237,7 @@ export async function deleteSubject(id: string): Promise<void> {
   await pool.query('DELETE FROM subjects WHERE id = $1', [id]);
 }
 
-export async function updateAssignmentAnswer(assignmentId: string, answerFileUrl: string, answerFileType: 'pdf' | 'image', answerFilename: string): Promise<void> {
+export async function updateAssignmentAnswer(assignmentId: string, answerFileUrl: string, answerFileType: 'pdf' | 'image' | 'powerpoint', answerFilename: string): Promise<void> {
   await pool.query(
     'UPDATE assignments SET answer_file_url = $1, answer_file_type = $2, answer_filename = $3 WHERE id = $4',
     [answerFileUrl, answerFileType, answerFilename, assignmentId]

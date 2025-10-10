@@ -108,11 +108,11 @@ export function UploadAnswerButton({ assignmentId, assignmentTitle, hasAnswer }:
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="answer-file">Answer File (PDF or Image)</Label>
+            <Label htmlFor="answer-file">Answer File (PDF, Image, or PowerPoint)</Label>
             <Input
               id="answer-file"
               type="file"
-              accept="application/pdf,image/jpeg,image/png"
+              accept="application/pdf,image/jpeg,image/png,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
               ref={fileInputRef}
               onChange={handleFileChange}
               disabled={isPending}

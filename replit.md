@@ -8,6 +8,13 @@ The application is built with Next.js 15, uses React Server Components for optim
 
 ## Recent Changes
 
+**October 10, 2025:**
+- **PowerPoint File Upload Support**: Added support for uploading PowerPoint files
+  - Course materials now accept .ppt and .pptx files in addition to PDF, images, and videos
+  - Assignments can now have PowerPoint files as both main files and answer files
+  - Updated file type detection to recognize PowerPoint MIME types
+  - Updated form validation schemas and file input accept attributes across all upload forms
+
 **October 9, 2025:**
 - **ASSON Branding Update**: Customized application for Association of Statistics Students Nigeria
   - Updated site title to "ASSON (Association of Statistics Students Nigeria)"

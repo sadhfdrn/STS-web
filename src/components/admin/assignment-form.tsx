@@ -221,7 +221,7 @@ export function AssignmentForm() {
               <FormControl>
                 <Input 
                     type="file" 
-                    accept="application/pdf,image/jpeg,image/png"
+                    accept="application/pdf,image/jpeg,image/png,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                     ref={fileInputRef}
                     onChange={(e) => onChange(e.target.files?.[0])}
                     {...rest}
@@ -240,7 +240,7 @@ export function AssignmentForm() {
               <FormControl>
                 <Input 
                     type="file" 
-                    accept="application/pdf,image/jpeg,image/png"
+                    accept="application/pdf,image/jpeg,image/png,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                     ref={answerFileInputRef}
                     onChange={(e) => onChange(e.target.files?.[0])}
                     {...rest}
